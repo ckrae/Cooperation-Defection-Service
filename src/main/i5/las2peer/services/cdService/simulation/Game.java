@@ -4,8 +4,8 @@ package i5.las2peer.services.cdService.simulation;
 
 import java.util.List;
 
-import sim.engine.*;
-import sim.field.network.Network;
+import sim.engine.SimState;
+import sim.engine.Steppable;
 import sim.util.Bag;
 
 /**
@@ -14,8 +14,10 @@ import sim.util.Bag;
 
 public class Game implements Steppable {
 
-/////////////// Attributes ///////////////		
+/////////////// Attributes ///////////////
 
+	private static final long serialVersionUID = 1L;
+	
 	/** Payoff Matrix Values
 	 * ( cc, cd )	( R , S )
 	 * ( dc, dd )	( T , P )	

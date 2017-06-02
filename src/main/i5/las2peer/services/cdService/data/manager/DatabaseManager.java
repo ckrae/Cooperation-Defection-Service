@@ -1,4 +1,4 @@
-package i5.las2peer.services.cdService.utility;
+package i5.las2peer.services.cdService.data.manager;
 
 import i5.las2peer.services.cdService.data.SimulationParameters;
 import i5.las2peer.services.cdService.data.SimulationSeries;

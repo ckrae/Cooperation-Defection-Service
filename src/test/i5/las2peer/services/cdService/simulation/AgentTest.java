@@ -2,11 +2,12 @@
 
 package i5.las2peer.services.cdService.simulation;
 
-import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
-import i5.las2peer.services.cdService.simulation.*;
-import sim.field.network.*;
+import org.junit.Test;
+
+import sim.field.network.Edge;
+import sim.field.network.Network;
 import sim.util.Bag;
 
 public class AgentTest 

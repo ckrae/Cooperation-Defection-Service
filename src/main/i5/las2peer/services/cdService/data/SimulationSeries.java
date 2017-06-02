@@ -1,54 +1,55 @@
 package i5.las2peer.services.cdService.data;
 
-
 import java.io.Serializable;
 import java.util.ArrayList;
-
-import i5.las2peer.api.Context;
-import i5.las2peer.security.UserAgent;
-import i5.las2peer.services.cdService.CDService;
-
 
 /**
  * SimulationSeries
  * 
- * Container for all SimulationData of the same game series.
- * identifier SERVICE_PREFIX + UserId + # + SeriesId
+ * Container for all SimulationData of the same game series. identifier
+ * SERVICE_PREFIX + UserId + # + SeriesId
  */
 
 public class SimulationSeries implements Serializable {
 
-/////////////// Attributes ///////////////
+	/////////////// Attributes ///////////////
 
 	private static final long serialVersionUID = 1L;
-	
-	private final SimulationParameters parameters;	
-	private ArrayList<SimulationData> datasets;
-	
-////////////////////////////////////////////	
-		
-	public SimulationSeries (SimulationParameters parameters) {
-		
+
+	private long seriesId;
+	private long userId;
+	private final SimulationParameters parameters;
+	private final ArrayList<SimulationData> datasets;
+
+	////////////////////////////////////////////
+
+	public SimulationSeries(long seriesId, long userId, SimulationParameters parameters,
+			ArrayList<SimulationData> datasets) {
+
 		this.parameters = parameters;
-		this.datasets = new ArrayList<SimulationData>();
-	
-	}	
-	
-	public void addSimnulationData (SimulationData data) {
-		
-		datasets.add(data);		
+		this.datasets = datasets;
+		this.seriesId = seriesId;
+		this.userId = userId;
+
 	}
 
 	public SimulationParameters getParameters() {
+
 		return parameters;
 	}
 
+	public ArrayList<SimulationData> getDatasets() {
 
-	
+		return datasets;
+	}
 
+	public long getSeriesId() {
 
-	
-	
-	
-	
+		return seriesId;
+	}
+
+	public long getUserId() {
+		return userId;
+	}
+
 }

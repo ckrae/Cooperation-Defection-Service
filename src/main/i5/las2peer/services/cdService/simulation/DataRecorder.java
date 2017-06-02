@@ -1,104 +1,90 @@
 
-
 package i5.las2peer.services.cdService.simulation;
 
-
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.ArrayList;
 
 import i5.las2peer.services.cdService.data.SimulationData;
-import sim.engine.*;
+import sim.engine.SimState;
+import sim.engine.Steppable;
 import sim.field.network.Network;
 import sim.util.Bag;
 
+public class DataRecorder implements Steppable {
+	private static final long serialVersionUID = 1;
 
-public class DataRecorder implements Steppable
-    {
-	    private static final long serialVersionUID = 1;	    
-	    
-	    private double[] cooperationValues;
-	    private double[] payoffValues;
-	    private boolean[] networkCooperation;
-	    private double[] networkPayoff;
-	    
-	    public DataRecorder(int maxIterations) {	    	
-	    	
-	    	this.cooperationValues = new double[maxIterations+1];
-	    	this.payoffValues = new double[maxIterations+1];
-	    }
-	    
-	   
-/////////////////// Steps ///////////////////////////
-	  
-	    @Override       
-	    public void step(SimState state)
-	    {
-	        Simulation simulation = (Simulation) state;
-	        cooperationValues[simulation.getRound()] = simulation.getCooperationValue();
-	        payoffValues[simulation.getRound()] = simulation.getTotalPayoff();	
-	    }	     
-	    
-	    public SimulationData createData (Simulation simulation) {
-	    	
-	        Network network = simulation.getNetwork();
-	        Bag agents = new Bag(network.getAllNodes());
-	        int size = agents.size();
-	        networkCooperation = new boolean[size];
-	        for(int i = 0; i<size; i++) {	        	
-	        	Agent agent = (Agent) agents.get(i);
-	        	networkCooperation[i] = agent.getStrategy();
-	        	networkPayoff[i] = agent.getPayoff();
-	        }
-	        
-	        SimulationData simulationData = new SimulationData(cooperationValues, networkCooperation, networkPayoff);	        
-			
-	        printToFile(simulationData);
-	        return simulationData;	        
-	    }
-	
+	private ArrayList<Double> cooperationValues;
+	private ArrayList<Double> payoffValues;
+	private ArrayList<ArrayList<Boolean>> nodeStrategies;
+	private ArrayList<ArrayList<Double>> nodePayoff;
 
-	    public void printToFile(SimulationData data)  {
-	    	
-	    	String fileName = "test.txt";
-	    	String coopFileName = "coop.txt";
-	    	File dir = new File ("cds");
-	    	File file = new File (dir, fileName);
-	    	File coopFile = new File (dir, coopFileName);
-	    	FileWriter writer = null;	    	
-			try {
-				writer = new FileWriter(file);	
-			
-				for(int i=0, size=networkCooperation.length; i<size; i++) {
-					
-					writer.write(i+"#"+networkCooperation[i]+"#"+networkPayoff[i]+"\n");
-				}
-			
+	private SimulationData simulationData;
 
-			writer.flush();
-			writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			try {
-				writer = new FileWriter(coopFile);	
-			
-				for(int i=0, size=cooperationValues.length; i<size; i++) {
-					
-					writer.write(i+"#"+cooperationValues[i]+"\n");
-				}
-			
+	public DataRecorder(int maxIterations) {
 
-			writer.flush();
-			writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-	    }
-	    
+		this.cooperationValues = new ArrayList<Double>(maxIterations + 1);
+		this.payoffValues = new ArrayList<Double>(maxIterations + 1);
+		this.nodeStrategies = new ArrayList<ArrayList<Boolean>>();
+		this.nodePayoff = new ArrayList<ArrayList<Double>>();
 
+	}
 
-    } 
-    
+	/////////////////// Steps ///////////////////////////
+
+	@Override
+	public void step(SimState state) {
+		Simulation simulation = (Simulation) state;
+		Network network = simulation.getNetwork();
+		Bag agents = new Bag(network.getAllNodes());
+		int size = agents.size();
+
+		cooperationValues.add(simulation.getCooperationValue());
+		payoffValues.add(simulation.getAveragePayoff());
+
+		ArrayList<Boolean> strategies = new ArrayList<Boolean>(size);
+		ArrayList<Double> payoff = new ArrayList<Double>(size);
+
+		for (int i = 0; i < size; i++) {
+			Agent agent = (Agent) agents.get(i);
+			strategies.add(i, agent.getStrategy());
+			payoff.add(i, agent.getPayoff());
+		}
+
+		nodeStrategies.add(strategies);
+		nodePayoff.add(payoff);
+
+		if (simulation.isBreakCondition()) {
+
+			((ArrayList<ArrayList<Boolean>>) nodeStrategies).trimToSize();
+			((ArrayList<ArrayList<Double>>) nodePayoff).trimToSize();
+			storeResults(simulation);
+		}
+
+	}
+
+	private SimulationData storeResults(Simulation simulation) {
+
+		simulationData = new SimulationData(cooperationValues, payoffValues, nodeStrategies, nodePayoff,
+				(simulation.getRound() < simulation.getMaxIterations()));
+		printToFile(simulationData);
+		return simulationData;
+	}
+
+	public double getCooperationValue(int round) {
+
+		return cooperationValues.get(round);
+	}
+
+	public double getPayoffValue(int round) {
+
+		return payoffValues.get(round);
+	}
+
+	public SimulationData getSimulationData() {
+		return this.simulationData;
+	}
+
+	public void printToFile(SimulationData data) {
+
+	}
+
+}
