@@ -33,10 +33,12 @@ public class SimulationWithUI extends GUIState {
 		super(state);
 	}
 
+	@Override
 	public Object getSimulationInspectedObject() {
 		return state;
 	}
 
+	@Override
 	public Inspector getInspector() {
 		Inspector i = super.getInspector();
 		i.setVolatile(true);
@@ -47,11 +49,13 @@ public class SimulationWithUI extends GUIState {
 		return "Cooperation & Defection";
 	}
 
+	@Override
 	public void start() {
 		super.start();
 		setupPortrayals();
 	}
 
+	@Override
 	public void load(SimState state) {
 		super.load(state);
 		setupPortrayals();
@@ -73,6 +77,7 @@ public class SimulationWithUI extends GUIState {
 
 	}
 
+	@Override
 	public void init(Controller c) {
 		super.init(c);
 
@@ -90,6 +95,7 @@ public class SimulationWithUI extends GUIState {
 
 	}
 
+	@Override
 	public void quit() {
 		super.quit();
 

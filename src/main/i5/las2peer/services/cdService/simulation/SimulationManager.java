@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import i5.las2peer.services.cdService.data.SimulationData;
-import i5.las2peer.services.cdService.data.SimulationParameters;
-import i5.las2peer.services.cdService.data.SimulationSeries;
 import i5.las2peer.services.cdService.data.manager.DataManager;
+import i5.las2peer.services.cdService.data.simulation.SimulationData;
+import i5.las2peer.services.cdService.data.simulation.SimulationParameters;
+import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 import i5.las2peer.services.cdService.simulation.dynamics.Dynamic;
 import i5.las2peer.services.cdService.simulation.dynamics.DynamicFactory;
 import sim.field.network.Network;

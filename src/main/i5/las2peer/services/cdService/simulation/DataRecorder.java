@@ -3,7 +3,7 @@ package i5.las2peer.services.cdService.simulation;
 
 import java.util.ArrayList;
 
-import i5.las2peer.services.cdService.data.SimulationData;
+import i5.las2peer.services.cdService.data.simulation.SimulationData;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.network.Network;
@@ -19,12 +19,23 @@ public class DataRecorder implements Steppable {
 
 	private SimulationData simulationData;
 
-	public DataRecorder(int maxIterations) {
+	public DataRecorder(Simulation simulation) {
+
+		int maxIterations = simulation.getMaxIterations();
+		int networkSize = simulation.getNetwork().allNodes.size();
 
 		this.cooperationValues = new ArrayList<Double>(maxIterations + 1);
 		this.payoffValues = new ArrayList<Double>(maxIterations + 1);
-		this.nodeStrategies = new ArrayList<ArrayList<Boolean>>();
-		this.nodePayoff = new ArrayList<ArrayList<Double>>();
+
+		this.nodeStrategies = new ArrayList<ArrayList<Boolean>>(networkSize);
+		this.nodePayoff = new ArrayList<ArrayList<Double>>(networkSize);
+
+		for (int i = 0; i < networkSize; i++) {
+
+			ArrayList<Boolean> coopList = new ArrayList<Boolean>();
+			ArrayList<Double> payoffList = new ArrayList<Double>();
+
+		}
 
 	}
 
@@ -32,6 +43,7 @@ public class DataRecorder implements Steppable {
 
 	@Override
 	public void step(SimState state) {
+		
 		Simulation simulation = (Simulation) state;
 		Network network = simulation.getNetwork();
 		Bag agents = new Bag(network.getAllNodes());
@@ -40,22 +52,14 @@ public class DataRecorder implements Steppable {
 		cooperationValues.add(simulation.getCooperationValue());
 		payoffValues.add(simulation.getAveragePayoff());
 
-		ArrayList<Boolean> strategies = new ArrayList<Boolean>(size);
-		ArrayList<Double> payoff = new ArrayList<Double>(size);
-
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < size; i++) {						
+			
 			Agent agent = (Agent) agents.get(i);
-			strategies.add(i, agent.getStrategy());
-			payoff.add(i, agent.getPayoff());
+			nodeStrategies.get(i).add(agent.getStrategy());
+			nodePayoff.get(i).add(agent.getPayoff());
 		}
 
-		nodeStrategies.add(strategies);
-		nodePayoff.add(payoff);
-
 		if (simulation.isBreakCondition()) {
-
-			((ArrayList<ArrayList<Boolean>>) nodeStrategies).trimToSize();
-			((ArrayList<ArrayList<Double>>) nodePayoff).trimToSize();
 			storeResults(simulation);
 		}
 
@@ -63,9 +67,8 @@ public class DataRecorder implements Steppable {
 
 	private SimulationData storeResults(Simulation simulation) {
 
-		simulationData = new SimulationData(cooperationValues, payoffValues, nodeStrategies, nodePayoff,
+		simulationData = new SimulationData(simulation.getRound(), cooperationValues, payoffValues, nodeStrategies, nodePayoff,
 				(simulation.getRound() < simulation.getMaxIterations()));
-		printToFile(simulationData);
 		return simulationData;
 	}
 
@@ -83,8 +86,5 @@ public class DataRecorder implements Steppable {
 		return this.simulationData;
 	}
 
-	public void printToFile(SimulationData data) {
-
-	}
 
 }

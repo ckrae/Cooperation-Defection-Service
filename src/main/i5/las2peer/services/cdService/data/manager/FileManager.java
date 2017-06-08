@@ -13,9 +13,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import i5.las2peer.api.Context;
-import i5.las2peer.services.cdService.CDService;
-import i5.las2peer.services.cdService.data.SimulationData;
-import i5.las2peer.services.cdService.data.SimulationSeries;
+import i5.las2peer.services.cdService.data.simulation.SimulationData;
+import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 
 public class FileManager {
 
@@ -52,7 +51,7 @@ public class FileManager {
 	
 			ObjectMapper mapper = new ObjectMapper();
 			try {
-				mapper.writerWithDefaultPrettyPrinter().writeValue(new File(directory + seriesId + ".json"), series);
+				mapper.writerWithDefaultPrettyPrinter().writeValue(new File(directory + ".json"), series);
 			} catch (JsonProcessingException e1) {
 				e1.printStackTrace();
 			} catch (IOException e) {

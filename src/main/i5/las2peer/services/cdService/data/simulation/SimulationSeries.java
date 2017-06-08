@@ -1,4 +1,4 @@
-package i5.las2peer.services.cdService.data;
+package i5.las2peer.services.cdService.data.simulation;
 
 import java.io.Serializable;
 import java.util.ArrayList;

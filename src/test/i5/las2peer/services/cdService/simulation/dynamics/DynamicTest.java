@@ -2,18 +2,12 @@
 
 package i5.las2peer.services.cdService.simulation.dynamics;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
-
-import org.junit.Test;
 
 import i5.las2peer.services.cdService.simulation.Agent;
 import i5.las2peer.services.cdService.simulation.Game;
 import i5.las2peer.services.cdService.simulation.Simulation;
-import sim.field.network.Edge;
 import sim.field.network.Network;
-import sim.util.Bag;
 
 public class DynamicTest 
 {

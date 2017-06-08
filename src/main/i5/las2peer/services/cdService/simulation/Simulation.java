@@ -3,7 +3,7 @@ package i5.las2peer.services.cdService.simulation;
 
 import java.util.ArrayList;
 
-import i5.las2peer.services.cdService.data.SimulationData;
+import i5.las2peer.services.cdService.data.simulation.SimulationData;
 import i5.las2peer.services.cdService.simulation.dynamics.Dynamic;
 import i5.las2peer.services.cdService.simulation.dynamics.DynamicFactory;
 import sim.engine.SimState;
@@ -42,7 +42,7 @@ public class Simulation extends SimState {
 		this.network = new Network(false);
 		this.game = Game.build(2, 4);
 		this.dynamic = DynamicFactory.build("Replicator", 1.5);
-		this.recorder = new DataRecorder(MAX_ITERATIONS);
+		this.recorder = new DataRecorder(this);
 	}
 
 	public Simulation(long seed, Network network, Game game, Dynamic dynamic) {
@@ -52,7 +52,7 @@ public class Simulation extends SimState {
 		this.game = game;
 		this.dynamic = dynamic;
 
-		this.recorder = new DataRecorder(MAX_ITERATIONS);
+		this.recorder = new DataRecorder(this);
 
 	}
 
@@ -64,6 +64,7 @@ public class Simulation extends SimState {
 	/**
 	 * prepare for a new simulation run
 	 */
+	@Override
 	public void start() {
 
 		super.start();

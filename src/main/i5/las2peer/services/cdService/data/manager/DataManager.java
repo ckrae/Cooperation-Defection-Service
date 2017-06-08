@@ -6,9 +6,9 @@ import i5.las2peer.api.Context;
 import i5.las2peer.api.exceptions.StorageException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.cdService.CDService;
-import i5.las2peer.services.cdService.data.SimulationContainer;
-import i5.las2peer.services.cdService.data.SimulationParameters;
-import i5.las2peer.services.cdService.data.SimulationSeries;
+import i5.las2peer.services.cdService.data.simulation.SimulationContainer;
+import i5.las2peer.services.cdService.data.simulation.SimulationParameters;
+import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 
 public class DataManager {
 
@@ -83,6 +83,16 @@ public class DataManager {
 		if (CDService.USE_STORAGE) {
 			SimulationContainer container = StorageManager.getSimulationContainer();
 			return container.getIndexSet();
+		}
+
+		return null;
+	}
+	
+	public static SimulationContainer getSimulationContainer() {
+
+		if (CDService.USE_STORAGE) {
+			SimulationContainer container = StorageManager.getSimulationContainer();
+			return container;
 		}
 
 		return null;

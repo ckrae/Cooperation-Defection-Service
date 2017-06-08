@@ -1,8 +1,7 @@
-package i5.las2peer.services.cdService.data;
+package i5.las2peer.services.cdService.data.simulation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Simulation Data
@@ -23,19 +22,22 @@ public class SimulationData implements Serializable {
 	private final ArrayList<Double> cooperationValues;
 	private final ArrayList<Double> payoffValues;
 
-	private final Collection<ArrayList<Boolean>> nodeStrategies;
-	private final Collection<ArrayList<Double>> nodePayoff;
+	private final ArrayList<ArrayList<Boolean>> nodeStrategies;
+	private final ArrayList<ArrayList<Double>> nodePayoff;	
+
+	private final long dataId;
 
 	/////////////// Constructor ///////////////
 
-	public SimulationData(ArrayList<Double> cooperationValues, ArrayList<Double> payoffValues,
-			Collection<ArrayList<Boolean>> nodeStrategies, Collection<ArrayList<Double>> nodePayoff, boolean stable) {
+	public SimulationData(long dataId, ArrayList<Double> cooperationValues, ArrayList<Double> payoffValues,
+			ArrayList<ArrayList<Boolean>> nodeStrategies, ArrayList<ArrayList<Double>> nodePayoff, boolean stable) {
 
 		this.cooperationValues = cooperationValues;
 		this.payoffValues = payoffValues;
 		this.nodeStrategies = nodeStrategies;
-		this.nodePayoff = nodePayoff;
+		this.nodePayoff = nodePayoff;		
 
+		this.dataId = dataId;
 		this.stable = stable;
 
 	}
@@ -49,11 +51,11 @@ public class SimulationData implements Serializable {
 		return this.payoffValues;
 	}
 
-	public Collection<ArrayList<Boolean>> getNodeStrategies() {
+	public ArrayList<ArrayList<Boolean>> getNodeStrategies() {
 		return this.nodeStrategies;
 	}
 
-	public Collection<ArrayList<Double>> getNodePayoff() {
+	public ArrayList<ArrayList<Double>> getNodePayoff() {
 		return this.nodePayoff;
 	}
 
@@ -63,6 +65,10 @@ public class SimulationData implements Serializable {
 
 	public boolean isStable() {
 		return stable;
+	}
+
+	public long getDataId() {
+		return dataId;
 	}
 
 }

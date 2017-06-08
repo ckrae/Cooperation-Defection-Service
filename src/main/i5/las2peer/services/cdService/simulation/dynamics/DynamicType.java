@@ -9,7 +9,7 @@ package i5.las2peer.services.cdService.simulation.dynamics;
 public enum DynamicType {
 
 	REPLICATOR(0, "Replicator"),
-	UNCONDITIONAL_IMITATION(1, "Unconditional Imitation"),
+	UNCONDITIONAL_IMITATION(1, "Imitation"),
 	MORAN(2, "Moran-Like");
 
 	private final String name;
