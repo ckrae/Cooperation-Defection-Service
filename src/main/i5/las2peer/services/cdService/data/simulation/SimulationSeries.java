@@ -19,24 +19,34 @@ public class SimulationSeries implements Serializable {
 	private long seriesId;
 	private long userId;
 	private final SimulationParameters parameters;
+	private final SimulationEvaluation evaluation;
 	private final ArrayList<SimulationData> datasets;
 
 	////////////////////////////////////////////
 
-	public SimulationSeries(long seriesId, long userId, SimulationParameters parameters,
+	public SimulationSeries(SimulationParameters parameters,
 			ArrayList<SimulationData> datasets) {
 
 		this.parameters = parameters;
 		this.datasets = datasets;
-		this.seriesId = seriesId;
-		this.userId = userId;
+		this.evaluation = new SimulationEvaluation(this);
 
+	}
+	
+	public double[] getLastCooperationValues() {
+		
+		int size = datasets.size();
+		double[] values = new double[size];
+		for (int i=0; i<size; i++) {
+			values[i] = datasets.get(i).getLastCooperationValue();
+		}
+		return values;
 	}
 
 	public SimulationParameters getParameters() {
 
 		return parameters;
-	}
+	}	
 
 	public ArrayList<SimulationData> getDatasets() {
 
@@ -44,12 +54,27 @@ public class SimulationSeries implements Serializable {
 	}
 
 	public long getSeriesId() {
-
 		return seriesId;
+	}
+	
+	public void setSeriesId(long seriesId) {
+		this.seriesId = seriesId;
 	}
 
 	public long getUserId() {
 		return userId;
+	}
+	
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
+	
+	public void setUserId() {
+		this.userId = userId;
+	}
+
+	public SimulationEvaluation getEvaluation() {
+		return evaluation;
 	}
 
 }

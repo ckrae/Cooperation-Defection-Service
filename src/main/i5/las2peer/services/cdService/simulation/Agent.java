@@ -1,19 +1,20 @@
 
 package i5.las2peer.services.cdService.simulation;
 
-import i5.las2peer.services.cdService.simulation.dynamics.Dynamic;
 import sim.engine.SimState;
 import sim.engine.Steppable;
-import sim.util.Bag;
 
 public class Agent implements Steppable {
 	private static final long serialVersionUID = 1;
 
+	private final long nodeId;
+	
 	private boolean currentStrategy;
 	private double currentPayoff;
 
-	public Agent() {
-
+	public Agent(long nodeId) {
+		
+		this.nodeId = nodeId;
 		this.currentStrategy = false;
 		this.currentPayoff = 0.0;
 
@@ -26,25 +27,7 @@ public class Agent implements Steppable {
 
 	}
 
-	///////// Payoff //////////
-
-	public void updatePayoff(SimState state) {
-		Simulation simulation = (Simulation) state;
-		double payoff = simulation.getGame().getPayoff(this, new Bag(simulation.getNeighbourhood(this)));
-
-		this.currentPayoff = payoff; 
-
-	}
-
-	///////// Dynamic //////////
-
-	public void updateDynamic(SimState state) {
-		Simulation simulation = (Simulation) state;
-		Dynamic dynamic = simulation.getDynamic();
-		boolean strategy = dynamic.getNewStrategy(this, simulation);
-		this.currentStrategy = strategy;
-	}
-
+	
 	////////////////// Utility ///////////////////////////
 
 	/**
@@ -79,6 +62,10 @@ public class Agent implements Steppable {
 
 	public void setPayoff(double payoff) {
 		this.currentPayoff = payoff;
+	}
+
+	public long getNodeId() {
+		return nodeId;
 	}
 
 }

@@ -24,16 +24,16 @@ public class DataRecorder implements Steppable {
 		int maxIterations = simulation.getMaxIterations();
 		int networkSize = simulation.getNetwork().allNodes.size();
 
-		this.cooperationValues = new ArrayList<Double>(maxIterations + 1);
-		this.payoffValues = new ArrayList<Double>(maxIterations + 1);
+		this.cooperationValues = new ArrayList<Double>(maxIterations);
+		this.payoffValues = new ArrayList<Double>(maxIterations);
 
 		this.nodeStrategies = new ArrayList<ArrayList<Boolean>>(networkSize);
 		this.nodePayoff = new ArrayList<ArrayList<Double>>(networkSize);
 
 		for (int i = 0; i < networkSize; i++) {
 
-			ArrayList<Boolean> coopList = new ArrayList<Boolean>();
-			ArrayList<Double> payoffList = new ArrayList<Double>();
+			nodeStrategies.add(new ArrayList<Boolean>());
+			nodePayoff.add(new ArrayList<Double>());
 
 		}
 

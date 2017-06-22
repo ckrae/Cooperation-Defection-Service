@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Cooperation & Defection</title>
+
+    <!-- CSS Stylesheets -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+
+    <!-- JavaScript -->
+    <script src="js/jquery.js"></script>
+    <script src="js/jquery.session.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-select.js"></script>
+    <script src="js/contentHandler.js"></script>
+    <script src="js/ServiceAPI/b64.js"></script>
+    <script src="js/ServiceAPI/moduleHelper.js"></script>
+    <script src="js/ServiceAPI/serviceAPI.js"></script>
+    <script src="js/jws-2.0.min.js"></script>
+    <script src="js/requestHandler.js"></script>
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <div id="navigation">
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <button id="button" type="button" class="btn btn-primary">Get Simulation</button>
+
+                <div id="target">
+                </div>
+
+           </div>
+        </div>
+        <!-- /.row -->
+
+    </div>
+    <!-- /.container -->
+
+
+<!-- SCRIPT SEND REQUEST -->
+<script>
+
+    $( "#button" ).click(function( event ) {
+
+    event.preventDefault();
+
+        sendRequest("get", "simulation/0", "",
+        /* Response handler */
+        function(response) {
+            var simulation = JSON.parse(response);
+            var parameters = simulation.parameters;
+            var series = simulation.datasets;
+            console.log(parameters);
+            console.log(series);
+     // window.location.href = 'index.html';
+      },
+        /* Error handler */
+      function(errorData) {
+        //window.location.href = 'index.html';
+        /*
+        * GraphIds request failed
+        */
+        //showConnectionErrorMessage("Benchmark request failed.");
+      }, "application/json");
+    });
+
+
+
+
+</script>
+
+
+</body>
+
+</html>

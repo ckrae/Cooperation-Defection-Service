@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Cooperation & Defection</title>
+
+    <!-- CSS Stylesheets -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+
+    <!-- JavaScript -->
+    <script src="js/jquery.js"></script>
+    <script src="js/jquery.session.js"></script>
+    <script src="js/jquery.tablesorter.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-select.js"></script>
+    <script src="js/contentHandler.js"></script>
+    <script src="js/ServiceAPI/b64.js"></script>
+    <script src="js/ServiceAPI/moduleHelper.js"></script>
+    <script src="js/ServiceAPI/serviceAPI.js"></script>
+    <script src="js/jws-2.0.min.js"></script>
+    <script src="js/requestHandler.js"></script>
+    <script src="js/simulationForm.js"></script>
+    <script src="js/Chart.min.js"></script>
+
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <div id="navigation">
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+        <div class="row">
+            <div class="col-lg-12">
+
+
+
+                <div id="filterContainer">
+                </div>
+
+                    <div id="seriesTable">
+                    <form id="targetForm">
+                        <table class="table tablesorter">
+                          <thead>
+                            <tr>
+                              <th onMouseOver="style.cursor='pointer'"><span class="checkall">check</span></th>
+                              <th onMouseOver="style.cursor='pointer'">SeriesId</th>
+                              <th onMouseOver="style.cursor='pointer'">#Cooperation</th>
+                              <th onMouseOver="style.cursor='pointer'">Deviation</th>
+                              <th onMouseOver="style.cursor='pointer'">Network</th>
+                              <th onMouseOver="style.cursor='pointer'">Game</th>
+                              <th onMouseOver="style.cursor='pointer'">Dynamic</th>
+                              <th></th>
+
+                            </tr>
+                          </thead>
+                          <tbody id="seriesTableBody">
+                          </tbody>
+                        </table>
+                        <div id="options">
+
+                        </div>
+                    </form>
+                    </div>
+
+                </div>
+
+
+
+            </div>
+        </div>
+        <!-- /.row -->
+
+    </div>
+    <!-- /.container -->
+
+
+
+<script>
+$(document).ready(function() {
+
+    sendRequest("get", "simulation/meta", "",
+        /* Response handler */
+        function(response) {
+            var meta = JSON.parse(response);
+                var tableString = "";
+                jQuery.each(meta, function(index, value) {
+
+                    var parameters = value.parameters;
+                    var evaluation = value.evaluation;
+                    var payoff = parameters.payoffValues;
+                    var scheme = payoff;
+                    if(payoff.length === 4) {
+                        scheme = new Array(payoff[0].toFixed(2), payoff[1].toFixed(2), payoff[2].toFixed(2), payoff[3].toFixed(2));
+                    }
+
+                    tableString = tableString + getSimulationTableRow(index, parameters.graphId, scheme, parameters.dynamic, evaluation.averageCooperationValue, evaluation.standartDeviation);
+                });
+
+                var optionsString = getOptionsDiv();
+
+                $("#seriesTableBody").html(tableString);
+                $("#options").html(getOptionsDiv());
+                $('table').tablesorter();
+
+
+        //window.location.href = 'index.html';
+        },
+        /* Error handler */
+        function(errorData) {
+         //window.location.href = 'index.html';
+        /*
+        * GraphIds request failed
+        */
+        //showConnectionErrorMessage("Benchmark request failed.");
+      }, "");
+
+
+      $(".checkall").click(function() {
+          var cblist = $("input[name=check\\[\\]]");
+          cblist.attr("checked", !cblist.attr("checked"));
+      });
+
+
+      $( "#targetForm" ).submit(function( event ) {
+
+              event.preventDefault();
+
+               var content = JSON.stringify($('form').serializeObject());
+
+                  sendRequest("get", "simulation/mapping", content,
+                  /* Response handler */
+                  function(response) {
+
+                //window.location.href = 'index.html';
+                },
+                  /* Error handler */
+                function(errorData) {
+                     $( "#confirmationDiv" ).html(errorData);
+                   //window.location.href = 'index.html';
+                  /*
+                  * GraphIds request failed
+                  */
+                  //showConnectionErrorMessage("Benchmark request failed.");
+                }, "application/json");
+      });
+
+
+
+    });
+
+    function getSimulationTableRow(index, graph, payoff, dynamic, cooperation, deviation) {
+        return '<tr>\
+        <td><input type="checkbox" name="check" value="' + index +'"/></td>\
+          <th scope="row">'+ index +'</th>\
+          <td>'+ cooperation +'</td>\
+          <td>'+ deviation +'</td>\
+          <td>'+ graph +'</td>\
+          <td>'+ payoff +'</td>\
+          <td>'+ dynamic +'</td>\
+          <td><a href="result.html?seriesId='+ index +'">show</a></td>\
+        </tr>'
+    }
+
+    function getOptionsDiv() {
+
+        return '<button type="submit" class="btn btn-default">Get Community Correlations</button>'
+
+    }
+
+</script>
+
+
+
+</body>
+
+</html>

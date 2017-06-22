@@ -17,6 +17,7 @@ public class SimulationData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/////// Results ///////
+	private final long dataId;
 	private final boolean stable;
 
 	private final ArrayList<Double> cooperationValues;
@@ -25,7 +26,7 @@ public class SimulationData implements Serializable {
 	private final ArrayList<ArrayList<Boolean>> nodeStrategies;
 	private final ArrayList<ArrayList<Double>> nodePayoff;	
 
-	private final long dataId;
+	
 
 	/////////////// Constructor ///////////////
 

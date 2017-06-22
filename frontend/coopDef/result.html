@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Cooperation & Defection</title>
+
+    <!-- CSS Stylesheets -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+
+    <!-- JavaScript -->
+    <script src="js/jquery.js"></script>
+    <script src="js/jquery.session.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-select.js"></script>
+    <script src="js/contentHandler.js"></script>
+    <script src="js/ServiceAPI/b64.js"></script>
+    <script src="js/ServiceAPI/moduleHelper.js"></script>
+    <script src="js/ServiceAPI/serviceAPI.js"></script>
+    <script src="js/jws-2.0.min.js"></script>
+    <script src="js/requestHandler.js"></script>
+    <script src="js/simulationForm.js"></script>
+    <script src="js/Chart.min.js"></script>
+
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <div id="navigation">
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+        <div class="row">
+            <div class="col-lg-12">
+
+
+        <div id="simulationViewContainer">
+            <div id="simulationParameters">
+            </div>
+
+            <canvas id="chart"></canvas>
+
+        </div>
+
+
+
+           </div>
+            </div>
+        </div>
+        <!-- /.row -->
+
+    </div>
+    <!-- /.container -->
+
+
+
+<script>
+$(document).ready(function() {
+
+    var seriesId = getParameterByName('seriesId');
+    sendRequest("get", "simulation/"+ seriesId, "",
+        /* Response handler */
+        function(response) {
+            var obj = JSON.parse(response);
+                var parameters = obj.parameters;
+                var datasets = obj.datasets;
+                var graphId = parameters.graphId;
+                var string = '<div class="panel panel-default">\
+                <div class="panel-heading">\
+                <h3 class="panel-title">Simulation Series '+ obj.seriesId +'</h3>\
+                </div>  <div class="panel-body">\
+                <div id="NetworkDiv">Network: "'+ graphId +'"</div>\
+                <div><div class="col-md-1">Game: </div><div <div class="col-md-11">'+ parameters.payoffValues +'</div></div>\
+                <div><div class="col-md-1">Dynamic: </div><div <div class="col-md-11">'+ parameters.dynamic + '</div></div>\
+                </div> </div>';
+
+                $("#simulationParameters").html(string);
+
+                var dataArray = new Array(datasets[0].cooperationValues.length);
+                datasets.forEach(function(value, index) {
+                    dataArray[index] = value.cooperationValues;
+                });
+
+        generateCooperationChart(dataArray);
+
+        sendOCDRequest("get", "graphs/" + graphId + "?outputFormat=META_XML", "",
+            /* Response handler */
+            function(response) {
+                /* Stores graph meat information and adds it to the table */
+                graphMeta = $.parseXML(response);
+                console.log(graphMeta);
+                var name = $(graphMeta).find("Name").text();
+                var nodes = $(graphMeta).find("NodeCount").text();
+                var edges = $(graphMeta).find("EdgeCount").text();
+                var row = writeNetworkMeta(graphId, name, nodes, edges)
+                $("#NetworkDiv").html(row);
+            },
+            /* Error handler */
+            function(errorData) {
+
+        }, "text/plain");
+        },
+        /* Error handler */
+        function(errorData) {
+         //window.location.href = 'index.html';
+        /*
+        * GraphIds request failed
+        */
+        //showConnectionErrorMessage("Benchmark request failed.");
+      }, "");
+
+      sendRequest("get", "mapping/simulation/" + seriesId ,"",
+          /* Response handler */
+          function(response) {
+            console.log(response);
+
+
+          //window.location.href = 'index.html';
+          },
+          /* Error handler */
+          function(errorData) {
+           //window.location.href = 'index.html';
+          /*
+          * GraphIds request failed
+          */
+          //showConnectionErrorMessage("Benchmark request failed.");
+        }, "");
+
+
+
+
+    });
+
+    function writeNetworkMeta(id, name, nodes, edges) {
+    var string =
+        '<div class="col-md-1">Network</div>\
+        <div class="col-md-1">'+ id +'</div>\
+        <div class="col-md-2">'+ name +'</div>\
+        <div class="col-md-2">'+ nodes +' Nodes</div>\
+        <div class="col-md-2">'+ edges +' Edges</div>\
+        <div class="col-md-4"><a href="/OCD-Web-Client/graph.html?id='+ id + '">show</a></div>'
+        return string;
+    }
+
+    function generateCooperationChart(dataArray){
+
+        var intDatasets = dataArray.length;
+        var intGenerations = dataArray[0].length;
+        var labelArray = new Array(intGenerations);
+        for (var i = 0; i < intGenerations; i++) {
+            labelArray[i] = i;
+        }
+
+    var data = {
+        type: 'line',
+         data: {
+           labels: labelArray,
+           datasets: dataSetsObject(dataArray)
+         }
+     };
+
+    var ctx = document.getElementById("chart").getContext("2d");
+    var myChart = new Chart(ctx, data);
+}
+
+    var randomColor = function() {
+        var r = Math.floor(Math.random() * 255);
+        var g = Math.floor(Math.random() * 255);
+        var b = Math.floor(Math.random() * 255);
+        return "rgb(" + r + "," + g + "," + b + ")";
+    }
+
+    var dataObject = function(id, dataArray) {
+        return {
+          label: id,
+          data: dataArray,
+          backgroundColor: 'transparent',
+          borderColor: randomColor()
+        };
+    }
+
+    var dataSetsObject = function(dataArray) {
+
+        var dataSets = new Array();
+        for (var i = 0; i < dataArray.length; i++) {
+            dataSets.push(dataObject(i+1, dataArray[i]));
+        }
+        return dataSets;
+    };
+
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+
+</script>
+
+
+
+</body>
+
+</html>

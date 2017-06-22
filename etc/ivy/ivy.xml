@@ -12,9 +12,11 @@
         <dependency org="i5" name="las2peer" rev="0.6.4" changing="true" conf="platform->*" />
         <dependency org="i5" name="las2peer-web-connector" rev="0.6.4" changing="true" conf="platform->*" />
         <dependency org="junit" name="junit" rev="4.12" conf="platform->default" />
+        
 
 		<dependency org="mysql" name="mysql-connector-java" rev="5.1.6" conf="bundle->default" />
 		<dependency org="org.hibernate" name="hibernate-core" rev="5.2.10.Final" conf="bundle->default"/>
+		<dependency org="org.apache.commons" name="commons-math3" rev="3.2" conf="bundle->default"/>
 		
     </dependencies>
 </ivy-module>

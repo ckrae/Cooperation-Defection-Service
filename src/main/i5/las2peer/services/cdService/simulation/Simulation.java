@@ -4,8 +4,11 @@ package i5.las2peer.services.cdService.simulation;
 import java.util.ArrayList;
 
 import i5.las2peer.services.cdService.data.simulation.SimulationData;
-import i5.las2peer.services.cdService.simulation.dynamics.Dynamic;
-import i5.las2peer.services.cdService.simulation.dynamics.DynamicFactory;
+import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
+import i5.las2peer.services.cdService.simulation.dynamic.DynamicFactory;
+import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
+import i5.las2peer.services.cdService.simulation.game.Game;
+import i5.las2peer.services.cdService.simulation.game.GameFactory;
 import sim.engine.SimState;
 import sim.engine.Stoppable;
 import sim.field.network.Edge;
@@ -33,17 +36,9 @@ public class Simulation extends SimState {
 	/**
 	 * record data
 	 */
-	private DataRecorder recorder;
+	private final DataRecorder recorder;
 
 	//// Constructor
-	public Simulation(long seed) {
-		super(seed);
-
-		this.network = new Network(false);
-		this.game = Game.build(2, 4);
-		this.dynamic = DynamicFactory.build("Replicator", 1.5);
-		this.recorder = new DataRecorder(this);
-	}
 
 	public Simulation(long seed, Network network, Game game, Dynamic dynamic) {
 		super(seed);
@@ -54,6 +49,15 @@ public class Simulation extends SimState {
 
 		this.recorder = new DataRecorder(this);
 
+	}
+
+	public Simulation(long seed) {
+		super(seed);
+
+		this.network = new Network(false);
+		this.game = GameFactory.build(2, 4);
+		this.dynamic = DynamicFactory.build(DynamicType.REPLICATOR, 1.5);
+		this.recorder = new DataRecorder(this);
 	}
 
 	public static void main(String[] args) {
@@ -69,12 +73,29 @@ public class Simulation extends SimState {
 
 		super.start();
 
-		// set random strategy to every agent
+		// Set random strategies 50/50
 		Bag agents = new Bag(network.getAllNodes());
-		for (int i = 0, size = agents.size(); i < size; i++) {
+		int size = agents.size();
+		int cooperation = 0;
 
-			Agent agent = (Agent) agents.get(i);
-			agent.setStrategy(random.nextBoolean());
+		for (int i = 0; i < size; i++) {
+			boolean strategy;
+
+			// already 50% cooperation
+			if (cooperation * 2 >= size) {
+				strategy = false;
+			} else
+			// already 50% defection
+			if ((i - cooperation) * 2 >= size) {
+				strategy = true;
+			} else {
+				// random
+				strategy = random.nextBoolean();
+			}
+
+			((Agent) agents.get(i)).setStrategy(strategy);
+			if (strategy) cooperation++;
+
 		}
 
 		// event schedule
@@ -89,13 +110,15 @@ public class Simulation extends SimState {
 	public boolean isBreakCondition() {
 
 		int round = this.getRound();
-		if (round > 1) {
+		if (round > 5) {
 
 			if (round >= MAX_ITERATIONS) {
 				return true;
 			}
-			if (this.getCooperationValue() == recorder.getCooperationValue(round)
-					|| this.getAveragePayoff() == recorder.getPayoffValue(round)) {
+
+			if (recorder.getCooperationValue(round) == recorder.getCooperationValue(round - 1)
+					&& recorder.getCooperationValue(round - 1) == recorder.getCooperationValue(round - 2)
+					&& recorder.getPayoffValue(round) == recorder.getPayoffValue(round - 1)) {
 				return true;
 			}
 		}
@@ -132,23 +155,24 @@ public class Simulation extends SimState {
 	public Agent getRandomNeighbour(Agent agent) {
 
 		Bag agents = new Bag(getNeighbourhood(agent));
-		final int index = random.nextInt(agents.size());
-
-		return (Agent) agents.get(index);
+		if (agents.size() > 0) {
+			return (Agent) agents.get(random.nextInt(agents.size()));
+		}
+		return null;
 	}
 
-	/////// Simulation Data ////////
+	//////// Simulation Data /////////
 
 	/**
 	 * Number of Cooperators
 	 * 
 	 * @return total Number of Cooperators
 	 */
-	public long getCooperationNumber() {
+	public int getCooperationNumber() {
 
-		long number = 0;
+		int number = 0;
 		Bag agents = network.getAllNodes();
-		for (int i = 0; i < agents.size(); i++) {
+		for (int i = 0, si = agents.size(); i < si; i++) {
 			Agent agent = (Agent) agents.get(i);
 			if (agent.getStrategy()) {
 				number++;
@@ -200,28 +224,20 @@ public class Simulation extends SimState {
 		return value;
 	}
 
-	public long getGenerationCount() {
-
-		return dynamic.generationCount();
+	public int getRound() {
+		return (int) schedule.getTime();
 	}
 
 	public SimulationData getSimulationData() {
 		return recorder.getSimulationData();
 	}
 
-	public long getGameSteps() {
-		return game.stepped;
-	}
-
-	public int getRound() {
-		return (int) schedule.getTime();
-	}
+	/////// Get Simulation Settings /////////
 
 	public int getMaxIterations() {
 		return this.MAX_ITERATIONS;
 	}
 
-	///// Getter
 	/**
 	 * @return the network
 	 */
@@ -245,7 +261,7 @@ public class Simulation extends SimState {
 
 	public double[] getPayoffScheme() {
 
-		return this.getGame().toDoubleArray();
+		return this.getGame().getPayoffScheme();
 
 	}
 

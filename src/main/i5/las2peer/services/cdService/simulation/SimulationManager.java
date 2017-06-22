@@ -1,20 +1,17 @@
 package i5.las2peer.services.cdService.simulation;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-
-import i5.las2peer.services.cdService.data.manager.DataManager;
 import i5.las2peer.services.cdService.data.simulation.SimulationData;
 import i5.las2peer.services.cdService.data.simulation.SimulationParameters;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
-import i5.las2peer.services.cdService.simulation.dynamics.Dynamic;
-import i5.las2peer.services.cdService.simulation.dynamics.DynamicFactory;
+import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
+import i5.las2peer.services.cdService.simulation.dynamic.DynamicFactory;
+import i5.las2peer.services.cdService.simulation.game.Game;
+import i5.las2peer.services.cdService.simulation.game.GameFactory;
 import sim.field.network.Network;
 
 public class SimulationManager {
 
-	private static Queue<SimulationSeries> SimulationQueue = new LinkedList<SimulationSeries>();
 
 	public SimulationManager() {
 
@@ -22,12 +19,12 @@ public class SimulationManager {
 
 	public static SimulationSeries simulate(SimulationParameters para, Network network) {
 
-		Dynamic dynamic = DynamicFactory.build(para.getDynamic(), para.getDynamicValue());
-		Game game = Game.build(para.getPayoffValues());
+		Dynamic dynamic = DynamicFactory.build(para.getDynamic(), para.getDynamicValues());
+		Game game = GameFactory.build(para.getPayoffValues());
 
 		ArrayList<SimulationData> data = new ArrayList<SimulationData>(para.getIterations());
 
-		for (int i = 0, end = para.getIterations(); i <= end; i++) {
+		for (int i = 0, end = para.getIterations(); i < end; i++) {
 
 			Simulation simulation = new Simulation(System.currentTimeMillis(), network, game, dynamic);
 			simulation.start();
@@ -45,9 +42,7 @@ public class SimulationManager {
 
 	private static SimulationSeries build(SimulationParameters para, ArrayList<SimulationData> data) {
 
-		long seriesId = DataManager.getNextSeriesId();
-		long userId = DataManager.getUserId();
-		SimulationSeries series = new SimulationSeries(seriesId, userId, para, data);
+		SimulationSeries series = new SimulationSeries(para, data);
 		return series;
 	}
 
