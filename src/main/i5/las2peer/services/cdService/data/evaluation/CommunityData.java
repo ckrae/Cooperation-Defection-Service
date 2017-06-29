@@ -1,8 +1,8 @@
 package i5.las2peer.services.cdService.data.evaluation;
 
+import i5.las2peer.services.cdService.data.ConsistencyException;
 import i5.las2peer.services.cdService.data.mapping.CommunitySimulationSeriesMapping;
 import i5.las2peer.services.cdService.data.network.Community;
-import i5.las2peer.services.cdService.data.provider.ConsistencyException;
 
 public class CommunityData {
 

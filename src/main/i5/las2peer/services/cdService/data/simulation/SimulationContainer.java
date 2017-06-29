@@ -52,7 +52,7 @@ public class SimulationContainer implements Serializable {
 		return this.indexSet;
 	}
 	
-	public ArrayList<SimulationMeta> getSimulationMeta(SimulationParameters parameters) {
+	public ArrayList<SimulationMeta> getSimulationMeta(Parameters parameters) {
 		
 		return new ArrayList<SimulationMeta>(simulationMeta.values());		
 	}
@@ -68,7 +68,7 @@ public class SimulationContainer implements Serializable {
 
 		Set<Long> returnSeriesIds = new HashSet<Long>();
 		for (Long seriesId : indexSet) {
-			SimulationParameters simpa = simulationMeta.get(seriesId).getParameters();
+			Parameters simpa = simulationMeta.get(seriesId).getParameters();
 			if (simpa.getGraphId() == graphId) {
 				returnSeriesIds.add(seriesId);
 			}
@@ -80,7 +80,7 @@ public class SimulationContainer implements Serializable {
 
 		Set<Long> returnSeriesIds = new HashSet<Long>();
 		for (Long seriesId : indexSet) {
-			SimulationParameters simpa = simulationMeta.get(seriesId).getParameters();
+			Parameters simpa = simulationMeta.get(seriesId).getParameters();
 			if (simpa.getDynamic().equals(type.toString())) {
 				returnSeriesIds.add(seriesId);
 			}
@@ -92,7 +92,7 @@ public class SimulationContainer implements Serializable {
 
 		Set<Long> returnSeriesIds = new HashSet<Long>();
 		for (Long seriesId : indexSet) {
-			SimulationParameters simpa = simulationMeta.get(seriesId).getParameters();
+			Parameters simpa = simulationMeta.get(seriesId).getParameters();
 			if (simpa.getPayoffValues() .equals(scheme)) {
 				returnSeriesIds.add(seriesId);
 			}

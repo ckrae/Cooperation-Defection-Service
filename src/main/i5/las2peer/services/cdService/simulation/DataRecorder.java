@@ -3,7 +3,7 @@ package i5.las2peer.services.cdService.simulation;
 
 import java.util.ArrayList;
 
-import i5.las2peer.services.cdService.data.simulation.SimulationData;
+import i5.las2peer.services.cdService.data.simulation.DataSet;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.network.Network;
@@ -17,7 +17,7 @@ public class DataRecorder implements Steppable {
 	private ArrayList<ArrayList<Boolean>> nodeStrategies;
 	private ArrayList<ArrayList<Double>> nodePayoff;
 
-	private SimulationData simulationData;
+	private DataSet simulationData;
 
 	public DataRecorder(Simulation simulation) {
 
@@ -65,9 +65,9 @@ public class DataRecorder implements Steppable {
 
 	}
 
-	private SimulationData storeResults(Simulation simulation) {
+	private DataSet storeResults(Simulation simulation) {
 
-		simulationData = new SimulationData(simulation.getRound(), cooperationValues, payoffValues, nodeStrategies, nodePayoff,
+		simulationData = new DataSet(cooperationValues, payoffValues, nodeStrategies, nodePayoff,
 				(simulation.getRound() < simulation.getMaxIterations()));
 		return simulationData;
 	}
@@ -82,7 +82,7 @@ public class DataRecorder implements Steppable {
 		return payoffValues.get(round);
 	}
 
-	public SimulationData getSimulationData() {
+	public DataSet getSimulationData() {
 		return this.simulationData;
 	}
 

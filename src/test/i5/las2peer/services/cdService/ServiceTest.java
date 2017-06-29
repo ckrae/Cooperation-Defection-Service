@@ -8,27 +8,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import i5.las2peer.api.Context;
 import i5.las2peer.api.exceptions.StorageException;
 import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.PastryNodeImpl;
 import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.persistency.Envelope;
-import i5.las2peer.persistency.SharedStorage.STORAGE_MODE;
-import i5.las2peer.security.Agent;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.cdService.data.network.Network;
-import i5.las2peer.services.cdService.data.network.NetworkContainer;
-import i5.las2peer.services.cdService.data.provider.NetworkDataProvider;
 import i5.las2peer.testing.MockAgentFactory;
-import i5.las2peer.testing.TestSuite;
 import i5.las2peer.tools.CryptoException;
 import i5.las2peer.tools.SerializationException;
 import i5.las2peer.webConnector.WebConnector;

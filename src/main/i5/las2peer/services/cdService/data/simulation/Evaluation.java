@@ -2,26 +2,50 @@ package i5.las2peer.services.cdService.data.simulation;
 
 import java.io.Serializable;
 
-public class SimulationEvaluation implements Serializable {
+import javax.persistence.Basic;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+
+@Entity
+public class Evaluation implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	///////// Entity Fields ///////////
+
+	@Id
+	@OneToOne(fetch = FetchType.LAZY)
+	SimulationSeries series;
+
+	@Basic
 	private double averageCooperationValue;
+
+	@Basic
 	private double variance;
+
+	@Basic
 	private double standartDeviation;
 
-	public SimulationEvaluation(SimulationSeries series) {
+	/////////// Constructor ///////////
 
+	public Evaluation() {
+
+	}
+
+	public Evaluation(SimulationSeries series) {
+
+		this.series = series;
 
 		double[] values = series.getLastCooperationValues();
-
 		this.averageCooperationValue = calculateAverageCooperationValue(values);
 		this.variance = calculateVariance(values, averageCooperationValue);
 		this.standartDeviation = calculateStandartDeviation(variance);
 	}
-	
-	//// Calculations ////
-	
+
+	/////////// Calculations ///////////
+
 	private double calculateAverageCooperationValue(double[] values) {
 
 		if (values == null)
@@ -52,13 +76,17 @@ public class SimulationEvaluation implements Serializable {
 		return Math.sqrt(varianz);
 
 	}
-	
-	//// Getter ////
-	
+
+	//////////// Getter /////////////
+
+	public SimulationSeries getSeries() {
+		return this.series;
+	}
+
 	public double getAverageCooperationValue() {
 		return this.averageCooperationValue;
-	}	
-	
+	}
+
 	public double getVariance() {
 		return this.variance;
 	}

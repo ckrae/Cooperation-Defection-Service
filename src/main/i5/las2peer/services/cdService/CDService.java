@@ -26,16 +26,15 @@ import i5.las2peer.logging.NodeObserver.Event;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.security.UserAgent;
+import i5.las2peer.services.cdService.data.MappingDataProvider;
+import i5.las2peer.services.cdService.data.NetworkDataProvider;
+import i5.las2peer.services.cdService.data.SimulationDataProvider;
 import i5.las2peer.services.cdService.data.mapping.CoverSimulationSeriesMapping;
-import i5.las2peer.services.cdService.data.mapping.MappingFactory;
 import i5.las2peer.services.cdService.data.network.Cover;
 import i5.las2peer.services.cdService.data.network.Network;
 import i5.las2peer.services.cdService.data.network.NetworkAdapter;
-import i5.las2peer.services.cdService.data.provider.MappingDataProvider;
-import i5.las2peer.services.cdService.data.provider.NetworkDataProvider;
-import i5.las2peer.services.cdService.data.provider.SimulationDataProvider;
 import i5.las2peer.services.cdService.data.simulation.SimulationMeta;
-import i5.las2peer.services.cdService.data.simulation.SimulationParameters;
+import i5.las2peer.services.cdService.data.simulation.Parameters;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 import i5.las2peer.services.cdService.simulation.SimulationManager;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
@@ -47,7 +46,6 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
-
 
 /**
  * Cooperation Defection Service
@@ -75,9 +73,7 @@ public class CDService extends RESTService {
 	/**
 	 * If activated the service will use a database to store the simulation data
 	 */
-	public static final boolean USE_DATABASE = false;
-	public static final boolean USE_STORAGE = true;
-	public static final boolean USE_FILES = false;
+	public static final boolean USE_DATABASE = true;
 
 	@Override
 	protected void initResources() {
@@ -98,7 +94,7 @@ public class CDService extends RESTService {
 
 		// get access to the service class
 		private final CDService service = (CDService) Context.getCurrent().getService();
-		
+
 		private final SimulationDataProvider simulationDataProvider = SimulationDataProvider.getInstance();
 		private final NetworkDataProvider networkDataProvider = NetworkDataProvider.getInstance();
 		private final MappingDataProvider mappingDataProvider = MappingDataProvider.getInstance();
@@ -125,9 +121,9 @@ public class CDService extends RESTService {
 		@ApiResponses(value = {
 				@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "REPLACE THIS WITH YOUR OK MESSAGE"),
 				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
-		public Response getSimulations(SimulationParameters parameters) {
+		public Response getSimulations(Parameters parameters) {
 
-			ArrayList<SimulationSeries> series = new ArrayList<SimulationSeries>();
+			List<SimulationSeries> series = new ArrayList<SimulationSeries>();
 			try {
 				if (parameters == null) {
 					series = simulationDataProvider.getSimulationSeries();
@@ -152,16 +148,16 @@ public class CDService extends RESTService {
 		@ApiResponses(value = {
 				@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "REPLACE THIS WITH YOUR OK MESSAGE"),
 				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
-		public Response getSimulationParameters(SimulationParameters parameters) {
+		public Response getSimulationMeta(Parameters parameters) {
 
-			if(parameters == null) {
-				parameters = new SimulationParameters();
+			if (parameters == null) {
+				parameters = new Parameters();
 			}
-			
-			ArrayList<SimulationMeta> seriesMeta = new ArrayList<SimulationMeta>();
-			try {						
-					seriesMeta = simulationDataProvider.getSimulationMeta(parameters);
-			
+
+			List<SimulationMeta> seriesMeta = new ArrayList<SimulationMeta>();
+			try {
+				seriesMeta = simulationDataProvider.getSimulationMeta(parameters);
+
 			} catch (Exception e) {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, "fail to get simulation series. " + e.toString());
 				e.printStackTrace();
@@ -191,7 +187,7 @@ public class CDService extends RESTService {
 
 			try {
 				series = simulationDataProvider.getSimulationSeries(seriesId);
-			} catch (StorageException e) {
+			} catch (Exception e) {
 				logger.log(Level.WARNING, "user: " + username, e);
 				e.printStackTrace();
 				return Response.status(Status.BAD_REQUEST).entity("no simulation with id " + seriesId + " found")
@@ -215,7 +211,7 @@ public class CDService extends RESTService {
 				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
 		public Response getSimulationParameters(@PathParam("seriesId") long seriesId) {
 
-			SimulationParameters parameters = null;
+			Parameters parameters = null;
 			try {
 				parameters = simulationDataProvider.getSimulationParameters(seriesId);
 			} catch (Exception e) {
@@ -260,24 +256,15 @@ public class CDService extends RESTService {
 		@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "OK"),
 				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
 		@ApiOperation(value = "POST SIMULATION", notes = " Starts the simulation of a evolutionary cooperation and defection game ")
-		public Response postSimulation(SimulationParameters parameters) {
+		public Response postSimulation(Parameters parameters) {
 
 			String username = ((UserAgent) Context.getCurrent().getMainAgent()).getLoginName();
 
 			/// Validate JSON parameters
 
 			//// Graph
-
-			long graphId = parameters.getGraphId();
-			Network network = null;
-
-			try {
-				network = networkDataProvider.getNetwork(graphId);
-			} catch (StorageException e) {
-				e.printStackTrace();
-				return Response.status(Status.BAD_REQUEST).entity("Graph not found").build();
-			}
-
+			long graphId = parameters.getGraphId();			
+			Network network = networkDataProvider.getNetwork(graphId);
 			if (network == null) {
 				return Response.status(Status.BAD_REQUEST).entity("Graph not found").build();
 			}
@@ -297,10 +284,6 @@ public class CDService extends RESTService {
 
 			//// Dynamic
 			if (parameters.getDynamic() == null) {
-				return Response.status(Status.BAD_REQUEST).entity("Invalid payoff").build();
-			}
-			String dynamicStr = parameters.getDynamic();
-			if (!DynamicType.TypeExists(dynamicStr)) {
 				return Response.status(Status.BAD_REQUEST).entity("Dynamic does not exist").build();
 			}
 
@@ -316,14 +299,14 @@ public class CDService extends RESTService {
 				e.printStackTrace();
 				return Response.serverError().entity("Simulation could not be carried out\n" + e.getMessage()).build();
 			}
-			
+
 			long result;
 			try {
 				result = simulationDataProvider.storeSimulationSeries(series);
 
-			} catch (StorageException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
-				return Response.serverError().entity("simulation not stored").build();				
+				return Response.serverError().entity("simulation not stored").build();
 			}
 
 			return Response.ok().entity("simulation done" + result).build();
@@ -358,8 +341,7 @@ public class CDService extends RESTService {
 				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
 		public Response getSimulations() {
 
-			SimulationParameters paramters = new SimulationParameters(2, new double[] { 1.0, 2., 3.1, 0.0 }, "Moran",
-					new double[] {}, 20);
+			Parameters paramters = new Parameters();
 
 			return Response.ok().entity(paramters).build();
 
@@ -467,12 +449,12 @@ public class CDService extends RESTService {
 				logger.log(Level.WARNING, "", e);
 				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("fail to get simulation series").build();
-			}		
-			
+			}
+
 			ArrayList<Cover> covers = new ArrayList<Cover>();
 			try {
 				ArrayList<Integer> coverIds = NetworkAdapter.inovkeCovers(series.getParameters().getGraphId());
-				
+
 				for (Integer coverId : coverIds) {
 					covers.add(NetworkAdapter.inovkeCoverById(series.getParameters().getGraphId(), coverId));
 				}
@@ -480,24 +462,21 @@ public class CDService extends RESTService {
 				logger.log(Level.WARNING, "", e);
 				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("fail to get covers").build();
-			}	
-						
-			
+			}
+
 			ArrayList<SimulationSeries> seriesList = new ArrayList<SimulationSeries>(1);
 			seriesList.add(series);
-			ArrayList<CoverSimulationSeriesMapping> mappings = null;			
+			ArrayList<CoverSimulationSeriesMapping> mappings = null;
 			try {
 				mappings = mappingDataProvider.getCoverSimulationSeriesMappings(covers, seriesList);
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "", e);
 				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("fail to get mappings").build();
-			}			
-			
+			}
+
 			return Response.ok().entity(mappings).build();
 		}
 	}
-	
-	
 
 }

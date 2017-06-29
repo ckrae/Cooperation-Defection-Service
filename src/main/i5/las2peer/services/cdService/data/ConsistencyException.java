@@ -1,4 +1,4 @@
-package i5.las2peer.services.cdService.data.provider;
+package i5.las2peer.services.cdService.data;
 
 public class ConsistencyException extends Exception {
 

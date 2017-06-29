@@ -2,42 +2,54 @@ package i5.las2peer.services.cdService.data.simulation;
 
 import java.io.Serializable;
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+
+@Entity
 public class SimulationMeta implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-
-	private long seriesId;
-	private SimulationParameters parameters;
-	private SimulationEvaluation evaluation;
+	
+	@Id
+	@OneToOne(fetch = FetchType.LAZY)
+	SimulationSeries series;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	private Parameters parameters;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	private Evaluation evaluation;
 
 	public SimulationMeta(SimulationSeries series) {
 		
-		this.setSeriesId(series.getSeriesId());
-		this.setParameters(series.getParameters());
-		this.setEvaluation(series.getEvaluation());
+		this.series = series;
+		this.parameters = series.getParameters();
+		this.evaluation = series.getEvaluation();
 	}
 
-	public long getSeriesId() {
-		return seriesId;
+	public SimulationSeries getSeries() {
+		return series;
 	}
 
-	public void setSeriesId(long seriesId) {
-		this.seriesId = seriesId;
+	public void setSeries(SimulationSeries series) {
+		this.series = series;
 	}
 
-	public SimulationParameters getParameters() {
+	public Parameters getParameters() {
 		return parameters;
 	}
 
-	public void setParameters(SimulationParameters parameters) {
+	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
 	}
 
-	public SimulationEvaluation getEvaluation() {
+	public Evaluation getEvaluation() {
 		return evaluation;
 	}
 
-	public void setEvaluation(SimulationEvaluation evaluation) {
+	public void setEvaluation(Evaluation evaluation) {
 		this.evaluation = evaluation;
 	}
 	

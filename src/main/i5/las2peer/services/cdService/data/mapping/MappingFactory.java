@@ -1,10 +1,11 @@
 package i5.las2peer.services.cdService.data.mapping;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import i5.las2peer.services.cdService.data.network.Community;
 import i5.las2peer.services.cdService.data.network.Cover;
-import i5.las2peer.services.cdService.data.simulation.SimulationData;
+import i5.las2peer.services.cdService.data.simulation.DataSet;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 
 public class MappingFactory {
@@ -25,22 +26,23 @@ public class MappingFactory {
 			SimulationSeries series) {
 
 		ArrayList<CommunitySimulationDataMapping> list = new ArrayList<CommunitySimulationDataMapping>();
-		ArrayList<SimulationData> datasets = series.getDatasets();
+		List<DataSet> datasets = series.getDatasets();
 		for (int i = 0, size = datasets.size(); i < size; i++) {
-			list.add(getCommunitySimulationSeriesMapping(community, datasets.get(i)));
+			//list.add(getCommunitySimulationSeriesMapping(community, datasets.get(i)));
 		}
 
 		return new CommunitySimulationSeriesMapping(series.getSeriesId(), series.getParameters().getGraphId(),
 				community.getCoverId(), community.getCommunityId(), list);
 	}
 
+	/*
 	private static CommunitySimulationDataMapping getCommunitySimulationSeriesMapping(Community community,
-			SimulationData simulationData) {
+			DataSet simulationData) {
 		ArrayList<Double> values = getCommunityCooperationValues(simulationData.getNodeStrategies(),
 				 community.getMembers());
 		return new CommunitySimulationDataMapping(0, simulationData.getDataId(), 0, community.getCoverId(), community.getCommunityId(), values, null);
 	}
-
+*/
 	private static ArrayList<Double> getCommunityCooperationValues(ArrayList<ArrayList<Boolean>> nodeStrategies,
 			ArrayList<Integer> arrayList) {
 

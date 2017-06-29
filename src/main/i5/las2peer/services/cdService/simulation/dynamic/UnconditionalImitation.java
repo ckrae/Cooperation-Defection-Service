@@ -31,7 +31,7 @@ public class UnconditionalImitation extends Dynamic {
 	@Override
 	protected boolean getNewStrategy(Agent agent, Simulation simulation) {
 
-		Bag neighbours = new Bag(simulation.getNeighbourhood(agent));
+		Bag neighbours = simulation.getNeighbourhood(agent);
 		double bestPayoff = agent.getPayoff();
 		boolean bestStrategy = agent.getStrategy();
 		for (int i = 0; i < neighbours.size(); i++) {

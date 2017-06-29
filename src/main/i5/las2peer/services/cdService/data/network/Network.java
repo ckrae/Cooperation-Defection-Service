@@ -1,7 +1,6 @@
 package i5.las2peer.services.cdService.data.network;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 import i5.las2peer.services.cdService.simulation.Agent;

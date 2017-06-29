@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import i5.las2peer.api.exceptions.RemoteServiceException;
 import i5.las2peer.api.exceptions.ServiceNotAvailableException;
 import i5.las2peer.api.exceptions.ServiceNotFoundException;
+import i5.las2peer.services.cdService.data.NetworkDataProvider;
 import i5.las2peer.services.cdService.data.network.Community;
 import i5.las2peer.services.cdService.data.network.Cover;
-import i5.las2peer.services.cdService.data.provider.NetworkDataProvider;
 
 public class CoverSimulationSeriesMapping implements Serializable {
 

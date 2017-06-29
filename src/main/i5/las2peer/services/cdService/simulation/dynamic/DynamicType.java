@@ -6,9 +6,7 @@ package i5.las2peer.services.cdService.simulation.dynamic;
  */
 public enum DynamicType {
 
-	REPLICATOR(0, "Replicator"),
-	UNCONDITIONAL_IMITATION(1, "Imitation"),
-	MORAN(2, "Moran");
+	REPLICATOR(0, "Replicator"), UNCONDITIONAL_IMITATION(1, "Imitation"), MORAN(2, "Moran");
 
 	private final String string;
 	private final int number;
@@ -27,15 +25,15 @@ public enum DynamicType {
 		}
 		return false;
 	}
-	
+
 	public static DynamicType fromString(String string) {
-	
+
 		for (DynamicType type : DynamicType.values()) {
-		      if (type.string.equalsIgnoreCase(string)) {
-		        return type;
-		      }
-		    }
-		    return null;
+			if (string.equalsIgnoreCase(type.name()) || string.equalsIgnoreCase(type.string)) {
+				return type;
+			}
+		}
+		return null;
 	}
 
 }

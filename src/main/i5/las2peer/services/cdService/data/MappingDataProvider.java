@@ -1,4 +1,4 @@
-package i5.las2peer.services.cdService.data.provider;
+package i5.las2peer.services.cdService.data;
 
 import java.util.ArrayList;
 
@@ -32,12 +32,12 @@ public class MappingDataProvider {
 	public ArrayList<CoverSimulationSeriesMapping> getCoverSimulationSeriesMappings(DynamicType dynamic,
 			double[] scheme, String algorithm) throws StorageException {
 
-		ArrayList<SimulationSeries> series = simulationDataProvider.getSimulationSeries(scheme, dynamic);
-		ArrayList<Network> networks = networkDataProvider.getNetworks(simulationDataProvider.getNetworkIds(series));
-		ArrayList<Cover> covers = networkDataProvider.getCovers(networks, algorithm);
+		//ArrayList<SimulationSeries> series = simulationDataProvider.getSimulationSeries(scheme, dynamic);
+		//ArrayList<Network> networks = networkDataProvider.getNetworks(simulationDataProvider.getNetworkIds(series));
+		//ArrayList<Cover> covers = networkDataProvider.getCovers(networks, algorithm);
 
-		return getCoverSimulationSeriesMappings(covers, series);
-
+		//return getCoverSimulationSeriesMappings(covers, series);
+		return null;
 	}
 
 	public ArrayList<CoverSimulationSeriesMapping> getCoverSimulationSeriesMappings(ArrayList<Cover> covers,

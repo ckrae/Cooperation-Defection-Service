@@ -3,7 +3,7 @@ package i5.las2peer.services.cdService.simulation;
 
 import java.util.ArrayList;
 
-import i5.las2peer.services.cdService.data.simulation.SimulationData;
+import i5.las2peer.services.cdService.data.simulation.DataSet;
 import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicFactory;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
@@ -130,18 +130,18 @@ public class Simulation extends SimState {
 	public Bag getNeighbourhood(Agent agent) {
 
 		Bag nodes = new Bag(network.getAllNodes());
-		Bag edges = new Bag(network.getEdges(agent, nodes));
+		Bag edges = new Bag(network.getEdges(agent, nodes));		
 		Bag neighbours = new Bag();
 		for (int i = 0; i < edges.size(); i++) {
 			Edge edge = (Edge) (edges.get(i));
 			Agent from = (Agent) edge.getFrom();
 			Agent to = (Agent) edge.getTo();
 
-			if (from.equals(agent) && !to.equals(agent)) {
+			if (!to.equals(agent)) {
 				neighbours.add(to);
 			} else {
-				if (to.equals(agent) && !from.equals(agent))
-					neighbours.add(from);
+				if (!from.equals(agent))
+				neighbours.add(from);
 			}
 		}
 		return neighbours;
@@ -228,7 +228,7 @@ public class Simulation extends SimState {
 		return (int) schedule.getTime();
 	}
 
-	public SimulationData getSimulationData() {
+	public DataSet getSimulationData() {
 		return recorder.getSimulationData();
 	}
 

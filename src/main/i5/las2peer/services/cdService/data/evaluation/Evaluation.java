@@ -11,9 +11,7 @@ import i5.las2peer.api.exceptions.ServiceNotFoundException;
 import i5.las2peer.api.exceptions.StorageException;
 import i5.las2peer.services.cdService.data.mapping.CoverSimulationSeriesMapping;
 import i5.las2peer.services.cdService.data.network.Community;
-import i5.las2peer.services.cdService.data.provider.MappingDataProvider;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
-import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
 
 public class Evaluation {
 

@@ -29,7 +29,7 @@ public class Moran extends Dynamic {
 	@Override
 	protected boolean getNewStrategy(Agent agent, Simulation simulation) {
 
-		Bag neighbours = new Bag(simulation.getNetwork().getAllNodes());
+		Bag neighbours = simulation.getNeighbourhood(agent);
 		int size = neighbours.size();
 
 		double totalPayoff = 0.0;
