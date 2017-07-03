@@ -2,7 +2,9 @@
 package i5.las2peer.services.cdService.simulation;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import i5.las2peer.services.cdService.data.simulation.AgentData;
 import i5.las2peer.services.cdService.data.simulation.DataSet;
 import sim.engine.SimState;
 import sim.engine.Steppable;
@@ -14,29 +16,15 @@ public class DataRecorder implements Steppable {
 
 	private ArrayList<Double> cooperationValues;
 	private ArrayList<Double> payoffValues;
-	private ArrayList<ArrayList<Boolean>> nodeStrategies;
-	private ArrayList<ArrayList<Double>> nodePayoff;
 
 	private DataSet simulationData;
 
 	public DataRecorder(Simulation simulation) {
 
 		int maxIterations = simulation.getMaxIterations();
-		int networkSize = simulation.getNetwork().allNodes.size();
 
 		this.cooperationValues = new ArrayList<Double>(maxIterations);
-		this.payoffValues = new ArrayList<Double>(maxIterations);
-
-		this.nodeStrategies = new ArrayList<ArrayList<Boolean>>(networkSize);
-		this.nodePayoff = new ArrayList<ArrayList<Double>>(networkSize);
-
-		for (int i = 0; i < networkSize; i++) {
-
-			nodeStrategies.add(new ArrayList<Boolean>());
-			nodePayoff.add(new ArrayList<Double>());
-
-		}
-
+		this.payoffValues = new ArrayList<Double>(maxIterations);		
 	}
 
 	/////////////////// Steps ///////////////////////////
@@ -51,14 +39,7 @@ public class DataRecorder implements Steppable {
 
 		cooperationValues.add(simulation.getCooperationValue());
 		payoffValues.add(simulation.getAveragePayoff());
-
-		for (int i = 0; i < size; i++) {						
-			
-			Agent agent = (Agent) agents.get(i);
-			nodeStrategies.get(i).add(agent.getStrategy());
-			nodePayoff.get(i).add(agent.getPayoff());
-		}
-
+		
 		if (simulation.isBreakCondition()) {
 			storeResults(simulation);
 		}
@@ -66,20 +47,27 @@ public class DataRecorder implements Steppable {
 	}
 
 	private DataSet storeResults(Simulation simulation) {
-
-		simulationData = new DataSet(cooperationValues, payoffValues, nodeStrategies, nodePayoff,
+		
+		Bag agents = new Bag(simulation.getNetwork().getAllNodes());
+		int size = agents.size();
+		List<AgentData> agentDataList = new ArrayList<AgentData>(size);
+		for(int i=0; i<size; i++) {
+			agentDataList.add(((Agent) agents.get(i)).getAgentData());
+		}
+		
+		simulationData = new DataSet(cooperationValues, payoffValues, agentDataList,
 				(simulation.getRound() < simulation.getMaxIterations()));
 		return simulationData;
 	}
 
 	public double getCooperationValue(int round) {
 
-		return cooperationValues.get(round);
+		return cooperationValues.get(round-1);
 	}
 
 	public double getPayoffValue(int round) {
 
-		return payoffValues.get(round);
+		return payoffValues.get(round-1);
 	}
 
 	public DataSet getSimulationData() {

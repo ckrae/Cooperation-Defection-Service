@@ -35,13 +35,28 @@ public class Parameters implements Serializable {
 	private GameType game;
 
 	@Basic
-	private double[] payoffValues;
+	private double payoffCC;
+	
+	@Basic
+	private double payoffCD;
+	
+	@Basic
+	private double payoffDD;
+	
+	@Basic
+	private double payoffDC;
+
+	@Basic
+	private double cost;
+	
+	@Basic
+	private double benefit;
 
 	@Enumerated(EnumType.STRING)
 	private DynamicType dynamic;
 
 	@Basic
-	private double[] dynamicValues;
+	private double dynamicValue;
 
 	@Basic
 	private int iterations;
@@ -52,22 +67,21 @@ public class Parameters implements Serializable {
 
 	}
 
-	public Parameters(SimulationSeries series, long graphId, double[] payoffValues, DynamicType dynamic,
-			double[] dynamicValues, int iterations) {
+	public Parameters(SimulationSeries series, long graphId, GameType game, double payoffCC, double payoffCD, double payoffDD, double payoffDC, DynamicType dynamic,
+			double dynamicValue, int iterations) {
 
 		this.series = series;
 		this.setGraphId(graphId);
-		this.setPayoffValues(payoffValues);
+		this.payoffCC = payoffCC;
+		this.payoffCD = payoffCD;
+		this.payoffDC = payoffDC;
+		this.payoffDD = payoffDD;
 		this.setDynamic(dynamic);
-		this.setDynamicValues(dynamicValues);
+		this.setDynamicValue(dynamicValue);
 		this.setIterations(iterations);
 	}
 
 	////////// Getter //////////
-
-	public SimulationSeries getSimulationSeries() {
-		return this.series;
-	}
 	
 	@JsonProperty
 	public long getGraphId() {
@@ -75,23 +89,72 @@ public class Parameters implements Serializable {
 	}
 	
 	@JsonProperty
-	public double[] getPayoffValues() {
-		return payoffValues;
-	}
-	
-	@JsonProperty
 	public DynamicType getDynamic() {
 		return dynamic;
 	}
-	
-	@JsonProperty
-	public double[] getDynamicValues() {
-		return this.dynamicValues;
-	}
-	
+		
 	@JsonProperty
 	public int getIterations() {
 		return iterations;
+	}
+	
+	@JsonProperty
+	public GameType getGame() {
+		if(game == null) {
+			this.game = GameType.getGameType(payoffCC, payoffCD, payoffDC, payoffDD);
+		}
+		return this.game;
+	}
+	
+	@JsonProperty
+	public double getPayoffCC() {
+		return payoffCC;
+	}	
+	
+	@JsonProperty
+	public double getPayoffCD() {
+		return payoffCD;
+	}	
+	
+	@JsonProperty
+	public double getPayoffDD() {
+		return payoffDD;
+	}	
+	
+	@JsonProperty
+	public double getPayoffDC() {
+		return payoffDC;
+	}
+	
+	@JsonProperty
+	public double getCost() {
+		return cost;
+	}
+	
+	@JsonProperty
+	public double getBenefit() {
+		return benefit;
+	}
+	
+	@JsonIgnore
+	public double[] getPayoffValues() {
+		return new double[]{payoffCC, payoffCD, payoffDC, payoffDD};
+	}
+	
+	@JsonIgnore
+	public double[] getDynamicValues() {		
+		return new double[]{dynamicValue};
+	}
+	
+	@JsonIgnore
+	public SimulationSeries getSimulationSeries() {
+		return this.series;
+	}
+	////////// Setter //////////
+	
+	@JsonIgnore
+	public void setSeries(SimulationSeries series) {
+		this.series = series;
 	}
 	
 	@JsonSetter
@@ -109,50 +172,72 @@ public class Parameters implements Serializable {
 		this.dynamic = DynamicType.fromString(dynamic);
 	}
 	
+	@JsonSetter
+	public void setGame(String game) {
+		this.game = GameType.fromString(game);
+	}
+	
 	@JsonIgnore
 	public void setDynamic(DynamicType dynamic) {
 		this.dynamic = dynamic;
 	}	
-
-	public void setDynamicValues(double[] dynamicValues) {
-		this.dynamicValues = dynamicValues;
+	
+	@JsonIgnore
+	public void setGame(GameType game) {
+		this.game = game;
+	}	
+	
+	@JsonSetter
+	public void setDynamicValue(double dynamicValue) {
+		this.dynamicValue = dynamicValue;
 	}
 	
 	@JsonSetter
-	public void setPayoffValues(double[] payoffValues) {
-		this.payoffValues = payoffValues;
-	}	
+	public void setPayoffCC(double payoffCC) {
+		this.payoffCC = payoffCC;
+	}
 	
-	public void setDynamicValue(double dynamicValue) {
-		this.setDynamicValues(new double[] { dynamicValue });
+	@JsonSetter
+	public void setPayoffCD(double payoffCD) {
+		this.payoffCD = payoffCD;
+	}
+	
+	@JsonSetter
+	public void setPayoffDD(double payoffDD) {
+		this.payoffDD = payoffDD;
+	}
+	
+	@JsonSetter
+	public void setPayoffDC(double payoffDC) {
+		this.payoffDC = payoffDC;
+	}
+	
+	@JsonSetter
+	public void setBenefit(double benefit) {
+		this.benefit = benefit;
+	}
+	
+	@JsonSetter
+	public void setCost(double cost) {
+		this.cost = cost;
 	}
 
 	///////////// Methods /////////////
 
 	public void normalize() {
 
-		// cast two value cost game to four value game
-		if (payoffValues.length == 2) {
-			double[] newValues = new double[4];
-			newValues[0] = payoffValues[0] - payoffValues[1];
-			newValues[1] = payoffValues[0];
-			newValues[2] = -payoffValues[1];
-			newValues[3] = 0.0;
-			setPayoffValues(newValues);
-		}
-
 		// normalize payoff values
-		int size = getPayoffValues().length;
-		double total = 0.0;
-		for (int i = 0; i < size; i++) {
-			total += Math.abs(payoffValues[i]);
-		}
+		int size = 4;
+		double total = payoffCC + payoffCD + payoffDC + payoffDD;
 		if (total != 0.0) {
-			for (int i = 0; i < size; i++) {
-				payoffValues[i] = payoffValues[i] / total;
-			}
+			payoffCC = payoffCC / size;
+			payoffCD = payoffCD / size;
+			payoffDC = payoffDC / size;
+			payoffDD = payoffDD / size;
 		}
 
 	}
+
+
 
 }

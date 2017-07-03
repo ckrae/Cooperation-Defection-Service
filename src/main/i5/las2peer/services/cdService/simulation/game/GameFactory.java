@@ -3,27 +3,31 @@ package i5.las2peer.services.cdService.simulation.game;
 import java.util.List;
 
 public class GameFactory {
-	
-	private GameFactory() {
-		
+
+	public static GameFactory getInstance() {
+		return new GameFactory();
 	}
 
-	public static Game build(double a, double b, double c, double d) {
+	public GameFactory() {
 
-		return (new Game(a, b, c, d));
 	}
 
-	public static Game build(double cost, double benefit) {
+	public Game build(double AA, double AB, double BA, double BB) {
+
+		return (new Game(AA, AB, BA, BB));
+	}
+
+	public Game build(double cost, double benefit) {
 
 		cost = Math.abs(cost);
-		double a = benefit - cost;
-		double b = benefit;
-		double c = -cost;
-		double d = 0.0;
-		return (build(a, b, c, d));
+		double AA = benefit - cost;
+		double AB = -cost;
+		double BA = benefit;
+		double BB = 0.0;
+		return (build(AA, AB, BA, BB));
 	}
 
-	public static Game build(double[] payoffList) {
+	public Game build(double[] payoffList) {
 
 		if (payoffList.length == 2) {
 			return (build((payoffList[0]), payoffList[1]));
@@ -34,7 +38,7 @@ public class GameFactory {
 		return null;
 	}
 
-	public static Game build(List<String> payoffList) {
+	public Game build(List<String> payoffList) {
 
 		if (payoffList.size() == 2) {
 			return (build(Double.parseDouble(payoffList.get(0)), Double.parseDouble(payoffList.get(1))));

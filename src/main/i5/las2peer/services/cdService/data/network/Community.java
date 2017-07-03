@@ -1,60 +1,80 @@
 package i5.las2peer.services.cdService.data.network;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.Basic;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+
+@Entity
 public class Community {
 
-	private final ArrayList<Integer> members;
-	private final long graphId;
-	private final long coverId;
-	private final long communityId;
+	@Id
+	@GeneratedValue
+	private long communityId;
 
-	protected Community(long graphId, long coverId, long communityId, ArrayList<Integer> members) {
+	@ManyToOne(fetch = FetchType.LAZY)
+	private Cover cover;
 
+	@ElementCollection
+	private List<Integer> members;
+
+	@Basic
+	private int nodes;
+
+	@Basic
+	private int edges;
+
+	@Basic
+	double density;
+
+	@Basic
+	double averageDegree;
+
+	@Basic
+	double clusteringCoefficient;
+	
+	public Community() {
+		
+	}
+	
+	protected Community(Cover cover, ArrayList<Integer> members) {
 		this.members = members;
-		this.graphId = graphId;
-		this.coverId = coverId;
-		this.communityId = communityId;
 	}
 
-	public ArrayList<Integer> getMembers() {
+	public List<Integer> getMembers() {
 		return this.members;
-	}
-	
-	public long getGraphId() {
-		return graphId;
-	}	
-	
-	public long getCoverId() {
-		return coverId;
 	}
 
 	public long getCommunityId() {
 		return communityId;
 	}
-	
+
 	//// Properties ////
-	
+
 	public double getDensity() {
-		
-		return 0.0;
+
+		return this.density;
 	}
-	
+
 	public double getAverageDegree() {
-		
-		return 0.0;		
+
+		return this.averageDegree;
 	}
 
 	public double getSize() {
 
-		return 0;
+		return this.nodes;
 	}
 
 	public double getClusteringCoefficient() {
 
-		return 0;
+		return this.clusteringCoefficient;
 	}
-	
-	
 
 }

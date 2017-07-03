@@ -9,6 +9,9 @@
 		<class>i5.las2peer.services.cdService.data.simulation.Parameters</class>		
 		<class>i5.las2peer.services.cdService.data.simulation.SimulationSeries</class>
 		<class>i5.las2peer.services.cdService.data.simulation.SeriesGroup</class>
+		<class>i5.las2peer.services.cdService.data.network.Graph</class>
+		<class>i5.las2peer.services.cdService.data.network.Cover</class>
+		<class>i5.las2peer.services.cdService.data.network.Community</class>
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" />
@@ -32,6 +35,9 @@
 		<class>i5.las2peer.services.cdService.data.simulation.Parameters</class>	
 		<class>i5.las2peer.services.cdService.data.simulation.SimulationSeries</class>
 		<class>i5.las2peer.services.cdService.data.simulation.SeriesGroup</class>
+		<class>i5.las2peer.services.cdService.data.network.Graph</class>
+		<class>i5.las2peer.services.cdService.data.network.Cover</class>
+		<class>i5.las2peer.services.cdService.data.network.Community</class>
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" />

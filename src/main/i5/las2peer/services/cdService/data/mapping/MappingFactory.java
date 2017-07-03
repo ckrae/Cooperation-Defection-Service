@@ -14,7 +14,7 @@ public class MappingFactory {
 	public static CoverSimulationSeriesMapping build(Cover cover, SimulationSeries series) {
 
 		ArrayList<CommunitySimulationSeriesMapping> list = new ArrayList<CommunitySimulationSeriesMapping>();
-		ArrayList<Community> communities = cover.getCommunities();
+		List<Community> communities = null;
 		for (int i = 0, size = communities.size(); i < size; i++) {
 			list.add(getCommunitySimulationSeriesMapping(communities.get(i), series));
 		}
@@ -25,14 +25,14 @@ public class MappingFactory {
 	private static CommunitySimulationSeriesMapping getCommunitySimulationSeriesMapping(Community community,
 			SimulationSeries series) {
 
-		ArrayList<CommunitySimulationDataMapping> list = new ArrayList<CommunitySimulationDataMapping>();
+		ArrayList<CommunityDataSetMapping> list = new ArrayList<CommunityDataSetMapping>();
 		List<DataSet> datasets = series.getDatasets();
 		for (int i = 0, size = datasets.size(); i < size; i++) {
 			//list.add(getCommunitySimulationSeriesMapping(community, datasets.get(i)));
 		}
 
 		return new CommunitySimulationSeriesMapping(series.getSeriesId(), series.getParameters().getGraphId(),
-				community.getCoverId(), community.getCommunityId(), list);
+				community.getCommunityId(), community.getCommunityId(), list);
 	}
 
 	/*

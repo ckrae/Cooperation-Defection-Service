@@ -17,11 +17,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * SimulationSeries
- * 
- * Container for all SimulationData of the same game series. identifier
- * SERVICE_PREFIX + UserId + # + SeriesId
+ *
  */
 
 @Entity
@@ -59,7 +60,7 @@ public class SimulationSeries implements Serializable {
 
 	public SimulationSeries(Parameters parameters, ArrayList<DataSet> datasets) {
 
-		this.parameters = parameters;
+		this.parameters = parameters;		
 		this.datasets = datasets;
 		this.evaluation = new Evaluation(this);
 
@@ -67,28 +68,37 @@ public class SimulationSeries implements Serializable {
 	
 	////////////////// Getter /////////////////////
 	
+	@JsonProperty
 	public long getSeriesId() {
 		return seriesId;
 	}
 	
+	@JsonProperty
 	public long getUserId() {
 		return userId;
 	}
-
+	
+	@JsonProperty
 	public Parameters getParameters() {
 
 		return parameters;
 	}
-
+	
+	@JsonProperty
 	public List<DataSet> getDatasets() {
-
 		return datasets;
 	}
-
+	
+	@JsonProperty
 	public Evaluation getEvaluation() {
 		return evaluation;
 	}
 	
+	@JsonIgnore
+	public SimulationMeta getSimulationMeta() {		
+		return new SimulationMeta(this);		
+	}
+		
 	public void setSeriesId(long seriesId) {
 		this.seriesId = seriesId;
 	}

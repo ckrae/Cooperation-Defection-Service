@@ -10,6 +10,13 @@ import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
 import i5.las2peer.api.Context;
+import i5.las2peer.api.exceptions.RemoteServiceException;
+import i5.las2peer.api.exceptions.ServiceNotAvailableException;
+import i5.las2peer.api.exceptions.ServiceNotFoundException;
+import i5.las2peer.api.exceptions.StorageException;
+import i5.las2peer.services.cdService.data.network.Cover;
+import i5.las2peer.services.cdService.data.network.Graph;
+import i5.las2peer.services.cdService.data.network.NetworkAdapter;
 import i5.las2peer.services.cdService.data.simulation.Parameters;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 
@@ -32,17 +39,19 @@ public class EntityHandler {
 		return databaseManager;
 	}
 
-	protected static synchronized EntityHandler getTestInstance() {
+	public static synchronized EntityHandler getTestInstance() {
 		if (databaseManager == null) {
 			databaseManager = new EntityHandler(PERSISTENCE_UNIT_NAME + "Test");
 		}
 		return databaseManager;
 	}
-
+	
+	
+	///////////// Simulation /////////////////
+	
 	protected SimulationSeries getSimulationSeries(long seriesId) {
 
 		EntityManager em = factory.createEntityManager();
-
 		TypedQuery<SimulationSeries> query = em.createQuery("SELECT s FROM SimulationSeries AS s WHERE s.seriesId =:id",
 				SimulationSeries.class);
 		query.setParameter("id", seriesId);
@@ -67,7 +76,6 @@ public class EntityHandler {
 	protected Parameters getSimulationParameters(long seriesId) {
 
 		EntityManager em = factory.createEntityManager();
-
 		TypedQuery<Parameters> query = em.createQuery("SELECT p FROM Parameters AS p WHERE s.series_seriesId =:id",
 				Parameters.class);
 		query.setParameter("id", seriesId);
@@ -97,7 +105,10 @@ public class EntityHandler {
 	}
 
 	public List<SimulationSeries> getSimulationSeries(Parameters parameters) {
-
+		
+		if(parameters == null)
+			return getSimulationSeries();
+		
 		EntityManager em = factory.createEntityManager();
 
 		TypedQuery<SimulationSeries> query = em.createQuery(
@@ -106,6 +117,90 @@ public class EntityHandler {
 		query.setParameter("dynamic", parameters.getDynamic());
 		 List<SimulationSeries> seriesList = query.getResultList();
 		return seriesList;
+	}
+	
+	public List<SimulationSeries> getSimulationSeries() {
+
+		EntityManager em = factory.createEntityManager();
+
+		TypedQuery<SimulationSeries> query = em.createQuery(
+				"SELECT s FROM SimulationSeries s", SimulationSeries.class);
+		 List<SimulationSeries> seriesList = query.getResultList();
+		return seriesList;
+	}
+	
+	//////////////// Network ///////////////////////
+	
+	protected Graph getNetwork(long networkId) {
+		
+		EntityManager em = factory.createEntityManager();
+		try {
+		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.networkId =:id",
+				Graph.class);
+		query.setParameter("id", networkId);
+		Graph network = query.getSingleResult();		
+		return network;
+		} catch( Exception e ){
+			return null;
+		}
+		
+		
+	}
+	
+	protected long storeNetwork(Graph network) {
+
+		EntityManager em = factory.createEntityManager();
+		em.getTransaction().begin();
+		em.persist(network);
+		em.flush();
+		em.getTransaction().commit();
+		
+		long networkId = network.getNetworkId();
+		em.close();
+		return networkId;
+	}
+
+	protected List<Graph> getNetworks(List<Long> networkIds) {
+
+		EntityManager em = factory.createEntityManager();
+		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.networkId IN :ids",
+				Graph.class);
+		query.setParameter("ids", networkIds);
+		List<Graph> networks = query.getResultList();		
+		return networks;
+	}
+
+	protected List<Graph> getAllNetworks() {
+		
+		EntityManager em = factory.createEntityManager();
+		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n",
+				Graph.class);
+		List<Graph> networks = query.getResultList();		
+		return networks;
+	}
+
+	protected Cover getCover(Graph network, String algorithm)
+			throws StorageException, ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
+
+		Cover cover = NetworkAdapter.inovkeCoverByAlgorithm(network.getNetworkId(), algorithm);
+		return cover;
+	}
+
+	protected Cover getCover(long graphId, long coverId)
+			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
+
+		return NetworkAdapter.inovkeCoverById(graphId, coverId);
+
+	}
+
+	protected ArrayList<Cover> getCovers(ArrayList<Graph> networks, String algorithm) throws StorageException {
+
+		ArrayList<Cover> covers = new ArrayList<Cover>(networks.size());
+		for (Graph network : networks) {
+
+		}
+
+		return covers;
 	}
 
 }

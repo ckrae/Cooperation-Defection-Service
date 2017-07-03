@@ -2,6 +2,7 @@ package i5.las2peer.services.cdService.data.mapping;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import i5.las2peer.api.exceptions.RemoteServiceException;
 import i5.las2peer.api.exceptions.ServiceNotAvailableException;
@@ -53,7 +54,7 @@ public class CoverSimulationSeriesMapping implements Serializable {
 		double[] cooperationValues = new double[communityCount * datasetsCount + datasetsCount];
 
 		for (int i = 0, si = communityCount; i < si; i++) {
-			ArrayList<CommunitySimulationDataMapping> dataList = communityList.get(i).getMappings();
+			ArrayList<CommunityDataSetMapping> dataList = communityList.get(i).getMappings();
 			for (int j = 0, sj = datasetsCount; j < sj; j++) {
 				cooperationValues[(i * sj) + j] = dataList.get(j).getCooperationValue();
 			}
@@ -74,7 +75,7 @@ public class CoverSimulationSeriesMapping implements Serializable {
 		return cooperationValues;
 	}
 
-	public ArrayList<Community> getCommunities() throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
+	public List<Community> getCommunities() throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
 		
 		Cover cover = NetworkDataProvider.getInstance().getCover(graphId, coverId);
 		return cover.getCommunities();

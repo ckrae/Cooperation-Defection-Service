@@ -1,64 +1,122 @@
 package i5.las2peer.services.cdService.simulation;
 
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
-import i5.las2peer.services.cdService.data.network.Network;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+
+import static org.mockito.Matchers.*;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import i5.las2peer.services.cdService.simulation.Agent;
 import i5.las2peer.services.cdService.simulation.Simulation;
-import i5.las2peer.services.cdService.simulation.dynamic.DynamicFactory;
-import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
-import i5.las2peer.services.cdService.simulation.game.GameFactory;
+import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
+import i5.las2peer.services.cdService.simulation.game.Game;
+import sim.field.network.Network;
 import sim.util.Bag;
 
-/**
- * Example Test Class demonstrating a basic JUnit test structure.
- *
- */
+@RunWith(MockitoJUnitRunner.class)
 public class SimulationTest {
 
-	@Test
-	public void networkTest() {
+	@Mock
+	Network network;
 
-		Network network = new Network(0);
-		for (int i = 0; i < 20; i++) {
-			Agent agent = new Agent(i);
-			network.addNode(agent);
-		}
-		Bag agents = new Bag(network.getAllNodes());
-		network.addEdge(agents.get(3), agents.get(5), 1);
-		network.addEdge(agents.get(3), agents.get(6), 1);
-		network.addEdge(agents.get(3), agents.get(7), 1);
-		
-		((Agent) agents.get(3)).setPayoff(2.0);
-		((Agent) agents.get(5)).setPayoff(5.0);
-		((Agent) agents.get(6)).setPayoff(1.0);
-		((Agent) agents.get(7)).setPayoff(1.0);
-		((Agent) agents.get(5)).setStrategy(true);
+	@Mock
+	Game game;
 
-		Simulation simulation = new Simulation(0, network, GameFactory.build(1, 1),
-				DynamicFactory.build(DynamicType.UNCONDITIONAL_IMITATION));
+	@Mock
+	Dynamic dynamic;
 
-		Agent agent = (Agent) agents.get(3);
-		
-		Bag neighbours = simulation.getNeighbourhood(agent);
-		assertEquals(3, neighbours.size());
-		double bestPayoff = agent.getPayoff();
-		assertEquals(2.0, 2.0, agent.getPayoff());
-		boolean bestStrategy = agent.getStrategy();
-		assertEquals(bestStrategy, false);
-		for (int i = 0; i < neighbours.size(); i++) {
-			Agent neighbour = (Agent) neighbours.get(i);
-			if (neighbour.getPayoff() > bestPayoff) {
-				bestStrategy = neighbour.getStrategy();
-				bestPayoff = neighbour.getPayoff();
-			}
-		}
-		assertEquals(true, bestStrategy);
-				
-				
-		assertEquals(3, neighbours.size());
+	@Mock
+	Agent agent0;
+	@Mock
+	Agent agent1;
+	@Mock
+	Agent agent2;
+	@Mock
+	Agent agent3;
 
-		
+	@Mock
+	Bag agentsBag;
+
+	@Before
+	public void setUpAgents() {
+
+		Mockito.when(network.getAllNodes()).thenReturn(agentsBag);
+		Mockito.when(agentsBag.size()).thenReturn(4);
+		Mockito.when(agentsBag.get(0)).thenReturn(agent0);
+		Mockito.when(agentsBag.get(1)).thenReturn(agent1);
+		Mockito.when(agentsBag.get(2)).thenReturn(agent2);
+		Mockito.when(agentsBag.get(3)).thenReturn(agent3);
+
 	}
+
+	@Test
+	public void getCooperationTest() {
+
+		int coopNumber;
+		double coopValue;
+		Simulation simulation = new Simulation(1, network, game, dynamic);
+
+		Mockito.when(agent0.getStrategy(anyInt())).thenReturn(true);
+		Mockito.when(agent1.getStrategy(anyInt())).thenReturn(true);
+		Mockito.when(agent2.getStrategy(anyInt())).thenReturn(true);
+		Mockito.when(agent3.getStrategy(anyInt())).thenReturn(true);
+		coopNumber = simulation.getCooperationNumber();
+		assertEquals(4, coopNumber);
+		coopValue = simulation.getCooperationValue();
+		assertEquals(1.0, 1.0, coopValue);
+
+		Mockito.when(agent0.getStrategy(anyInt())).thenReturn(false);
+		Mockito.when(agent1.getStrategy(anyInt())).thenReturn(true);
+		Mockito.when(agent2.getStrategy(anyInt())).thenReturn(true);
+		Mockito.when(agent3.getStrategy(anyInt())).thenReturn(false);
+		coopNumber = simulation.getCooperationNumber();
+		assertEquals(2, coopNumber);
+		coopValue = simulation.getCooperationValue();
+		assertEquals(0.5, 0.5, coopValue);
+
+		Mockito.when(agent0.getStrategy(anyInt())).thenReturn(false);
+		Mockito.when(agent1.getStrategy(anyInt())).thenReturn(false);
+		Mockito.when(agent2.getStrategy(anyInt())).thenReturn(false);
+		Mockito.when(agent3.getStrategy(anyInt())).thenReturn(false);
+		coopNumber = simulation.getCooperationNumber();
+		assertEquals(0, coopNumber);
+		coopValue = simulation.getCooperationValue();
+		assertEquals(0.0, 0.0, coopValue);
+
+	}
+
+	@Test
+	public void getPayoffTest() {
+
+		double total;
+		double average;
+		Simulation simulation = new Simulation(1, network, game, dynamic);
+
+		Mockito.when(agent0.getPayoff(anyInt())).thenReturn(2.0);
+		Mockito.when(agent1.getPayoff(anyInt())).thenReturn(4.0);
+		Mockito.when(agent2.getPayoff(anyInt())).thenReturn(3.2);
+		Mockito.when(agent3.getPayoff(anyInt())).thenReturn(1.5);
+		total = simulation.getCooperationNumber();
+		assertEquals(10.7, 10.7, total);
+		average = simulation.getAveragePayoff();
+		assertEquals(2.675, 2.675, average);
+
+		Mockito.when(agent0.getPayoff(anyInt())).thenReturn(-1.2);
+		Mockito.when(agent1.getPayoff(anyInt())).thenReturn(3.4);
+		Mockito.when(agent2.getPayoff(anyInt())).thenReturn(0.0);
+		Mockito.when(agent3.getPayoff(anyInt())).thenReturn(1.6);
+		total = simulation.getCooperationNumber();
+		assertEquals(3.8, 3.8, total);
+		average = simulation.getAveragePayoff();
+		assertEquals(0.95, 0.95, average);
+
+	}
+
+	
+
 }

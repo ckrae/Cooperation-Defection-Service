@@ -51,16 +51,12 @@ public class DataSet implements Serializable {
 
 	}
 
-	public DataSet(ArrayList<Double> cooperationValues, ArrayList<Double> payoffValues,
-			ArrayList<ArrayList<Boolean>> nodeStrategies, ArrayList<ArrayList<Double>> nodePayoff, boolean stable) {
+	public DataSet(List<Double> cooperationValues, List<Double> payoffValues,
+			List<AgentData> agentDataList, boolean stable) {
 
 		this.cooperationValues = cooperationValues;
 		this.payoffValues = payoffValues;
-		this.agentData = new ArrayList<AgentData>();
-		for (int i = 0; i < nodeStrategies.size(); i++) {
-			agentData.add(new AgentData(nodeStrategies.get(i), nodePayoff.get(i)));
-		}
-
+		this.agentData = agentDataList;
 		this.stable = stable;
 	}
 

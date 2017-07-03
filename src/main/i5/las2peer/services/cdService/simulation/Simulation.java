@@ -10,6 +10,7 @@ import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
 import i5.las2peer.services.cdService.simulation.game.Game;
 import i5.las2peer.services.cdService.simulation.game.GameFactory;
 import sim.engine.SimState;
+import sim.engine.Steppable;
 import sim.engine.Stoppable;
 import sim.field.network.Edge;
 import sim.field.network.Network;
@@ -37,6 +38,10 @@ public class Simulation extends SimState {
 	 * record data
 	 */
 	private final DataRecorder recorder;
+	/**
+	 * break condition
+	 */
+	private BreakCondition breakCondition;
 
 	//// Constructor
 
@@ -46,17 +51,27 @@ public class Simulation extends SimState {
 		this.network = network;
 		this.game = game;
 		this.dynamic = dynamic;
-
 		this.recorder = new DataRecorder(this);
 
 	}
 
 	public Simulation(long seed) {
 		super(seed);
-
-		this.network = new Network(false);
-		this.game = GameFactory.build(2, 4);
-		this.dynamic = DynamicFactory.build(DynamicType.REPLICATOR, 1.5);
+		
+		Network netw = new Network(false);
+		
+		ArrayList<Agent> agentList = new ArrayList<Agent>(20);
+		for(int i=0; i<20; i++) {
+			agentList.add(i, new Agent(i));
+			netw.addNode(agentList.get(i));
+		}
+		for(int i=0; i<20; i++) {
+			netw.addEdge(agentList.get(random.nextInt(20)), agentList.get(random.nextInt(20)), 1);
+		}
+		
+		this.network = netw;
+		this.game = GameFactory.getInstance().build(2, 4);
+		this.dynamic = DynamicFactory.getInstance().build(DynamicType.REPLICATOR, 1.5);
 		this.recorder = new DataRecorder(this);
 	}
 
@@ -72,6 +87,11 @@ public class Simulation extends SimState {
 	public void start() {
 
 		super.start();
+
+		// event schedule
+		ArrayList<Stoppable> stopper = new ArrayList<Stoppable>(4);
+		stopper.add(schedule.scheduleRepeating(1, 3, recorder));
+
 
 		// Set random strategies 50/50
 		Bag agents = new Bag(network.getAllNodes());
@@ -92,73 +112,31 @@ public class Simulation extends SimState {
 				// random
 				strategy = random.nextBoolean();
 			}
-
-			((Agent) agents.get(i)).setStrategy(strategy);
-			if (strategy) cooperation++;
-
+			
+			// Initialize Agent
+			Agent agent = (Agent) agents.get(i);
+			agent.initialize(strategy, this);
+			if (strategy)
+				cooperation++;
+			
+			stopper.add(schedule.scheduleRepeating(1, 2, agent));
+			stopper.add(schedule.scheduleRepeating(2, 1, new Steppable() { public void step(SimState state) { agent.updateDynamicStep(state) ;} }));
+			
 		}
-
-		// event schedule
-		ArrayList<Stoppable> stopper = new ArrayList<Stoppable>(4);
-		stopper.add(schedule.scheduleRepeating(game, 1, 1));
-		stopper.add(schedule.scheduleRepeating(recorder, 2, 1));
-		stopper.add(schedule.scheduleRepeating(dynamic, 3, 1));
-		BreakCondition breakCondition = new BreakCondition(stopper);
-		breakCondition.add(schedule.scheduleRepeating(breakCondition, 4, 1));
+		
+		breakCondition = new BreakCondition(stopper);
+		breakCondition.add(schedule.scheduleRepeating(1, 4, breakCondition));
+		
+		
 	}
 
 	public boolean isBreakCondition() {
-
-		int round = this.getRound();
-		if (round > 5) {
-
-			if (round >= MAX_ITERATIONS) {
-				return true;
-			}
-
-			if (recorder.getCooperationValue(round) == recorder.getCooperationValue(round - 1)
-					&& recorder.getCooperationValue(round - 1) == recorder.getCooperationValue(round - 2)
-					&& recorder.getPayoffValue(round) == recorder.getPayoffValue(round - 1)) {
-				return true;
-			}
+		
+		if(this.getRound() > 4) {
+			return breakCondition.isBreakCondition(this);
 		}
 		return false;
-	}
-
-	//////// Network Utility /////////
-
-	public Bag getNeighbourhood(Agent agent) {
-
-		Bag nodes = new Bag(network.getAllNodes());
-		Bag edges = new Bag(network.getEdges(agent, nodes));		
-		Bag neighbours = new Bag();
-		for (int i = 0; i < edges.size(); i++) {
-			Edge edge = (Edge) (edges.get(i));
-			Agent from = (Agent) edge.getFrom();
-			Agent to = (Agent) edge.getTo();
-
-			if (!to.equals(agent)) {
-				neighbours.add(to);
-			} else {
-				if (!from.equals(agent))
-				neighbours.add(from);
-			}
-		}
-		return neighbours;
-	}
-
-	/**
-	 * Get a random neighbour agent
-	 * 
-	 * @return agent
-	 */
-	public Agent getRandomNeighbour(Agent agent) {
-
-		Bag agents = new Bag(getNeighbourhood(agent));
-		if (agents.size() > 0) {
-			return (Agent) agents.get(random.nextInt(agents.size()));
-		}
-		return null;
+		
 	}
 
 	//////// Simulation Data /////////
@@ -169,7 +147,6 @@ public class Simulation extends SimState {
 	 * @return total Number of Cooperators
 	 */
 	public int getCooperationNumber() {
-
 		int number = 0;
 		Bag agents = network.getAllNodes();
 		for (int i = 0, si = agents.size(); i < si; i++) {
@@ -204,7 +181,7 @@ public class Simulation extends SimState {
 	 */
 	public double getTotalPayoff() {
 
-		double totalPayoff = 0;
+		double totalPayoff = 0.0;
 		Bag agents = network.getAllNodes();
 		for (int i = 0; i < agents.size(); i++) {
 			Agent agent = (Agent) agents.get(i);
@@ -217,7 +194,7 @@ public class Simulation extends SimState {
 
 		double totalPayoff = getTotalPayoff();
 		double totalAgents = network.getAllNodes().size();
-		double value = 0;
+		double value = 0.0;
 		if (totalAgents > 0) {
 			value = (totalPayoff / totalAgents);
 		}
@@ -225,7 +202,7 @@ public class Simulation extends SimState {
 	}
 
 	public int getRound() {
-		return (int) schedule.getTime();
+		return (int) schedule.getSteps();
 	}
 
 	public DataSet getSimulationData() {
@@ -257,6 +234,13 @@ public class Simulation extends SimState {
 	 */
 	public Dynamic getDynamic() {
 		return dynamic;
+	}
+	
+	/**
+	 * @return the recorder
+	 */
+	public DataRecorder getDataRecorder() {
+		return recorder;		
 	}
 
 	public double[] getPayoffScheme() {

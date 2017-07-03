@@ -8,6 +8,9 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 public class Evaluation implements Serializable {
 
@@ -78,19 +81,23 @@ public class Evaluation implements Serializable {
 	}
 
 	//////////// Getter /////////////
-
+	
+	@JsonIgnore
 	public SimulationSeries getSeries() {
 		return this.series;
 	}
-
+	
+	@JsonProperty
 	public double getAverageCooperationValue() {
 		return this.averageCooperationValue;
 	}
-
+	
+	@JsonProperty
 	public double getVariance() {
 		return this.variance;
 	}
-
+	
+	@JsonProperty
 	public double getStandartDeviation() {
 		return this.standartDeviation;
 	}

@@ -1,6 +1,7 @@
 package i5.las2peer.services.cdService.data.evaluation;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
@@ -57,11 +58,11 @@ public class Evaluation {
 
 	
 	
-	public double[] getCommunitesProperties(ArrayList<Community> communities, PropertyType property) {
+	public double[] getCommunitesProperties(List<Community> list, PropertyType property) {
 		
-		double[] result = new double[communities.size()];
-		for(int i=0, si=communities.size(); i<si; i++) {
-			result[i] = getCommunityProperty(communities.get(i), property);			
+		double[] result = new double[list.size()];
+		for(int i=0, si=list.size(); i<si; i++) {
+			result[i] = getCommunityProperty(list.get(i), property);			
 		}
 		return result;
 	}

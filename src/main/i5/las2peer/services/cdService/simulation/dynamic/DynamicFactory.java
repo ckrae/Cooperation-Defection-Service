@@ -1,21 +1,23 @@
 package i5.las2peer.services.cdService.simulation.dynamic;
 
 public class DynamicFactory {
-
-	/////////////// Methods /////////////
-
-	public static Dynamic build(String dyn, double[] ds) {
+	
+	public static DynamicFactory getInstance() {
+		return new DynamicFactory();
+	}
+	
+	public Dynamic build(String dyn, double[] ds) {
 
 		Dynamic dynamic = null;
 		for (DynamicType t : DynamicType.values()) {
 			if (dyn.equalsIgnoreCase(t.name())) {
-				dynamic = DynamicFactory.build(t, ds);
+				dynamic = this.build(t, ds);
 			}
 		}
 		return dynamic;
 	}
 
-	public static Dynamic build(DynamicType dyn, double[] value) {
+	public Dynamic build(DynamicType dyn, double[] value) {
 
 		switch (dyn) {
 		case REPLICATOR:
@@ -32,11 +34,11 @@ public class DynamicFactory {
 
 	}
 
-	public static Dynamic build(DynamicType type) {
+	public Dynamic build(DynamicType type) {
 		return build(type, new double[]{1.5});
 	}
 	
-	public static Dynamic build(DynamicType type, double value) {
+	public Dynamic build(DynamicType type, double value) {
 		return build(type, new double[]{value});
 	}
 

@@ -16,19 +16,39 @@ public class BreakCondition implements Steppable {
 
 		this.stopper = stopper;
 	}
+	
+	public boolean isBreakCondition(Simulation simulation) {
+		
+		int round = simulation.getRound();
+		if (round > 5) {
 
+			if (round >= simulation.getMaxIterations()) {
+				return true;
+			}
+			
+			DataRecorder recorder = simulation.getDataRecorder();
+			if (recorder.getCooperationValue(round-1) == recorder.getCooperationValue(round - 2)
+					&& recorder.getCooperationValue(round - 2) == recorder.getCooperationValue(round - 3)
+					&& recorder.getPayoffValue(round - 1) == recorder.getPayoffValue(round - 2)) {
+				return true;
+			}
+		}
+		return false;
+		
+	}
+	
 	@Override
 	public void step(SimState state) {
 		Simulation simulation = (Simulation) state;
-
-		if (simulation.isBreakCondition()) {
+				
+		if (this.isBreakCondition(simulation)) {
 
 			for (int i = 0, size = stopper.size(); i < size; i++) {
 				stopper.get(i).stop();
 			}
 		}
 	}
-
+	
 	public void add(Stoppable stoppable) {
 		stopper.add(stoppable);
 

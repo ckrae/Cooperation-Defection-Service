@@ -1,58 +1,82 @@
 package i5.las2peer.services.cdService.data;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
+import i5.las2peer.api.Context;
 import i5.las2peer.api.exceptions.RemoteServiceException;
+import i5.las2peer.api.exceptions.ServiceInvocationException;
 import i5.las2peer.api.exceptions.ServiceNotAvailableException;
 import i5.las2peer.api.exceptions.ServiceNotFoundException;
 import i5.las2peer.api.exceptions.StorageException;
+import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.cdService.data.network.Cover;
-import i5.las2peer.services.cdService.data.network.Network;
+import i5.las2peer.services.cdService.data.network.Graph;
 import i5.las2peer.services.cdService.data.network.NetworkAdapter;
-import i5.las2peer.services.cdService.data.network.NetworkContainer;
 import i5.las2peer.services.cdService.simulation.Agent;
 import sim.util.Bag;
 
 public class NetworkDataProvider {
-
-	private NetworkDataProvider() {
-
-	}		
+	
+	private EntityHandler entityHandler;
+	
+	public NetworkDataProvider() {
+		entityHandler = EntityHandler.getInstance();
+	}
 
 	public static NetworkDataProvider getInstance() {
 		return new NetworkDataProvider();
 	}
 
-	public final Network getNetwork(long networkId) {
+	public Graph getNetwork(long networkId) throws ServiceInvocationException {
 
-		Network network = null;
+		// First try to get network from CDS Database
+		Graph network = null;
+		network = EntityHandler.getInstance().getNetwork(networkId);
+		if (network != null)
+			return network;
+
+		// Invoke from OCD Service
 		try {
-			network = NetworkAdapter.inovkeGraphById(networkId);
+			network = NetworkAdapter.inovkeGraphMeta(networkId);
 		} catch (ServiceNotFoundException | ServiceNotAvailableException | RemoteServiceException e) {
 			e.printStackTrace();
+			throw e;
+		}
+		
+		// Store in CDS Database
+		try {
+		if(network != null) {
+			long id = ((UserAgent) Context.getCurrent().getMainAgent()).getId();
+			network.setUserId(id);
+			EntityHandler.getInstance().storeNetwork(network);
+		}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
 		return network;
 	}
 
-	public final ArrayList<Network> getNetworks(Set<Long> networkIds) throws StorageException {
+	public ArrayList<Graph> getNetworks(Set<Long> networkIds) throws StorageException, ServiceInvocationException {
 
-		ArrayList<Network> networks = new ArrayList<Network>(networkIds.size());
+		ArrayList<Graph> networks = new ArrayList<Graph>(networkIds.size());
 		for (Long networkId : networkIds) {
 			networks.add(getNetwork(networkId));
 		}
 		return networks;
 	}
 
-	public final Set<Long> getNetworkIds() {
+	public Set<Long> getNetworkIds() {
 
 		return null;
 	}
 
-	public final Cover getCover(Network network, String algorithm)
+	public Cover getCover(Graph network, String algorithm)
 			throws StorageException, ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
 
-		Cover cover = NetworkAdapter.inovkeCoverByAlgorithm(network.getocdId(), algorithm);
+		Cover cover = NetworkAdapter.inovkeCoverByAlgorithm(network.getNetworkId(), algorithm);
 		return cover;
 	}
 
@@ -63,29 +87,23 @@ public class NetworkDataProvider {
 
 	}
 
-	public ArrayList<Cover> getCovers(ArrayList<Network> networks, String algorithm) throws StorageException {
+	public ArrayList<Cover> getCovers(ArrayList<Graph> networks, String algorithm) throws StorageException {
 
 		ArrayList<Cover> covers = new ArrayList<Cover>(networks.size());
-		for (Network network : networks) {
+		for (Graph network : networks) {
 
 		}
 
 		return covers;
 	}
 
-	public Network getTestNetwork() {
-
-		Network network = new Network(2);
-		for (int i = 0; i < 40; i++) {
-			Agent agent = new Agent(i);
-			network.addNode(agent);
+	public List<Graph> getNetworks(long userId) throws ServiceInvocationException {
+		List<Long> ids = NetworkAdapter.invokeGraphIds();
+		List<Graph> networks = new ArrayList<Graph>(ids.size());
+		for(long id: ids) {
+			networks.add(getNetwork(id));
 		}
-		Bag agents = new Bag(network.getAllNodes());
-		network.addEdge(agents.get(3), agents.get(5), 1);
-		network.addEdge(agents.get(3), agents.get(6), 1);
-		network.addEdge(agents.get(3), agents.get(7), 1);
-
-		return network;
+		return networks;
 	}
 
 }

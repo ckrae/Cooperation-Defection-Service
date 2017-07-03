@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response.Status;
 
 import i5.las2peer.api.Context;
 import i5.las2peer.api.exceptions.RemoteServiceException;
+import i5.las2peer.api.exceptions.ServiceInvocationException;
 import i5.las2peer.api.exceptions.ServiceNotAvailableException;
 import i5.las2peer.api.exceptions.ServiceNotFoundException;
 import i5.las2peer.api.exceptions.StorageException;
@@ -31,13 +32,14 @@ import i5.las2peer.services.cdService.data.NetworkDataProvider;
 import i5.las2peer.services.cdService.data.SimulationDataProvider;
 import i5.las2peer.services.cdService.data.mapping.CoverSimulationSeriesMapping;
 import i5.las2peer.services.cdService.data.network.Cover;
-import i5.las2peer.services.cdService.data.network.Network;
+import i5.las2peer.services.cdService.data.network.Graph;
 import i5.las2peer.services.cdService.data.network.NetworkAdapter;
 import i5.las2peer.services.cdService.data.simulation.SimulationMeta;
 import i5.las2peer.services.cdService.data.simulation.Parameters;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 import i5.las2peer.services.cdService.simulation.SimulationManager;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
+import i5.las2peer.services.cdService.simulation.game.GameType;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -156,7 +158,7 @@ public class CDService extends RESTService {
 
 			List<SimulationMeta> seriesMeta = new ArrayList<SimulationMeta>();
 			try {
-				seriesMeta = simulationDataProvider.getSimulationMeta(parameters);
+				seriesMeta = simulationDataProvider.getSimulationMeta(null);
 
 			} catch (Exception e) {
 				L2pLogger.logEvent(this, Event.SERVICE_ERROR, "fail to get simulation series. " + e.toString());
@@ -263,28 +265,33 @@ public class CDService extends RESTService {
 			/// Validate JSON parameters
 
 			//// Graph
-			long graphId = parameters.getGraphId();			
-			Network network = networkDataProvider.getNetwork(graphId);
+			long graphId = parameters.getGraphId();
+			Graph network = null;
+			try {
+				network = networkDataProvider.getNetwork(graphId);
+			} catch (ServiceInvocationException e) {
+				return Response.status(Status.BAD_REQUEST).entity("OCD invocation failed").build();
+
+			}
 			if (network == null) {
-				return Response.status(Status.BAD_REQUEST).entity("Graph not found").build();
+				return Response.status(Status.BAD_REQUEST).entity("graph not found").build();
 			}
 
 			//// Game
-			if (parameters.getPayoffValues() == null) {
-				return Response.status(Status.BAD_REQUEST).entity("Invalid payoff").build();
-			}
+			if (parameters.getPayoffCC() == 0.0 && parameters.getPayoffCD() == 0.0 && parameters.getPayoffDC() == 0.0
+					&& parameters.getPayoffDD() == 0.0) {
 
-			double[] payoffValues = parameters.getPayoffValues();
-			if (payoffValues.length != 4 && payoffValues.length != 2) {
+				if (parameters.getBenefit() == 0.0 && parameters.getCost() == 0.0) {
+					return Response.status(Status.BAD_REQUEST).entity("invalid payoff").build();
 
-				return Response.status(Status.BAD_REQUEST).entity("Invalid payoff").build();
+				}
 			}
 
 			parameters.normalize();
 
 			//// Dynamic
-			if (parameters.getDynamic() == null) {
-				return Response.status(Status.BAD_REQUEST).entity("Dynamic does not exist").build();
+			if (parameters.getDynamic() == null || parameters.getDynamic() == DynamicType.UNKNOWN) {
+				return Response.status(Status.BAD_REQUEST).entity("dynamic does not exist").build();
 			}
 
 			/// Start the Simulation
@@ -292,12 +299,13 @@ public class CDService extends RESTService {
 			try {
 
 				// Simulation
-				series = SimulationManager.simulate(parameters, network);
+				SimulationManager simulationManager = new SimulationManager();
+				series = simulationManager.simulate(parameters, network.getGraph());
 
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "user: " + username, e);
 				e.printStackTrace();
-				return Response.serverError().entity("Simulation could not be carried out\n" + e.getMessage()).build();
+				return Response.serverError().entity("simulation could not be carried out\n" + e.getMessage()).build();
 			}
 
 			long result;
@@ -316,7 +324,7 @@ public class CDService extends RESTService {
 		////////////// Information //////////////////
 
 		/**
-		 * Returns all available evolutionary dynamics
+		 * Returns all available dynamics
 		 * 
 		 * @return HttpResponse with the returnString
 		 */
@@ -326,24 +334,49 @@ public class CDService extends RESTService {
 		@ApiOperation(value = "GET Dynamic", notes = "Get all available evolutionary dynamics")
 		@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "OK"),
 				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
-		public Response getSimulation() {
+		public Response getDynamics() {
 
-			return Response.status(Status.NOT_IMPLEMENTED).entity(DynamicType.values()).build();
+			return Response.status(Status.OK).entity(DynamicType.values()).build();
+
+		}
+
+		/**
+		 * Returns all available games
+		 * 
+		 * @return HttpResponse with the returnString
+		 */
+		@GET
+		@Path("/info/games")
+		@Produces(MediaType.APPLICATION_JSON)
+		@ApiOperation(value = "GET Game", notes = "Get all available games")
+		@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "OK"),
+				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+		public Response getGames() {
+
+			return Response.status(Status.OK).entity(GameType.values()).build();
 
 		}
 
 		@GET
 		@Path("/info/parameters/")
 		@Produces(MediaType.APPLICATION_JSON)
-		@ApiOperation(value = "GET ALL SIMULATIONS", notes = "Gets all the simulations performed by the user")
+		@ApiOperation(value = "GET ALL SIMULATIONS", notes = "Gets a sample parameter json")
 		@ApiResponses(value = {
 				@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "REPLACE THIS WITH YOUR OK MESSAGE"),
 				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
 		public Response getSimulations() {
 
-			Parameters paramters = new Parameters();
+			Parameters parameters = new Parameters();
+			parameters.setGraphId(2);
+			parameters.setGame(GameType.PRISONERS_DILEMMA);
+			parameters.setDynamic(DynamicType.REPLICATOR);
+			parameters.setPayoffCC(2);
+			parameters.setPayoffCD(0);
+			parameters.setPayoffDC(3);
+			parameters.setPayoffDD(1);
+			parameters.setIterations(200);
 
-			return Response.ok().entity(paramters).build();
+			return Response.ok().entity(parameters).build();
 
 		}
 
@@ -366,17 +399,17 @@ public class CDService extends RESTService {
 		public Response getNetworks()
 				throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
 
-			String username = ((UserAgent) Context.getCurrent().getMainAgent()).getLoginName();
-			ArrayList<Long> networkIds = new ArrayList<Long>();
+			long userId = ((UserAgent) Context.getCurrent().getMainAgent()).getId();
+			List<Graph> networks;
 			try {
-				networkIds = NetworkAdapter.invokeGraphIds();
+				networks = NetworkDataProvider.getInstance().getNetworks(userId);
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "user: " + username, e);
+				logger.log(Level.WARNING, "user: " + userId, e);
 				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("fail to get networks").build();
 			}
 
-			return Response.ok().entity(networkIds).build();
+			return Response.ok().entity(networks).build();
 
 		}
 

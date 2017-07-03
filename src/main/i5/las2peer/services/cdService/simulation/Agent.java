@@ -1,71 +1,148 @@
 
 package i5.las2peer.services.cdService.simulation;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import ec.util.MersenneTwisterFast;
+import i5.las2peer.services.cdService.data.simulation.AgentData;
+import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
+import i5.las2peer.services.cdService.simulation.game.Game;
 import sim.engine.SimState;
 import sim.engine.Steppable;
+import sim.field.network.Edge;
+import sim.field.network.Network;
+import sim.util.Bag;
 
 public class Agent implements Steppable {
+
 	private static final long serialVersionUID = 1;
 
-	private final long nodeId;
-	
-	private boolean currentStrategy;
-	private double currentPayoff;
+	private int nodeId;
+	private int stepped;
 
-	public Agent(long nodeId) {
+	private List<Boolean> strategies;
+	private List<Double> payoff;
+	
+	private double currentPayoff;
+	private boolean currentStrategy;
+
+	public MersenneTwisterFast random;
+	private Network network;
+	private Game game;
+	private Dynamic dynamic;
+
+	public Agent(int nodeId) {
 		
 		this.nodeId = nodeId;
-		this.currentStrategy = false;
-		this.currentPayoff = 0.0;
+		strategies = new ArrayList<Boolean>();
+		strategies.add(false);
+		payoff = new ArrayList<Double>();
+		payoff.add(0.0);
+	}
+	
+	public Agent() {
+		
+	}
+
+	public void initialize(boolean strategy, Simulation simulation) {
+		
+		stepped = 0;
+		
+		strategies = new ArrayList<Boolean>();
+		currentStrategy = strategy;
+		strategies.add(strategy);
+		currentPayoff = 0.0;
+		payoff = new ArrayList<Double>();
+		payoff.add(0.0);
+		
+		random = simulation.random;
+		network = simulation.getNetwork();
+		game = simulation.getGame();
+		dynamic = simulation.getDynamic();
 
 	}
 
 	/////////////////// Steps ///////////////////////////
-	@Override
+
 	public void step(SimState state) {
 		Simulation simulation = (Simulation) state;
+		currentPayoff = game.getPayoff(this);
+		payoff.add(currentPayoff);
 
 	}
 
-	
+	public void updateDynamicStep(SimState state) {
+		Simulation simulation = (Simulation) state;
+		currentStrategy = dynamic.getNewStrategy(this, simulation);
+		strategies.add(dynamic.getNewStrategy(this, simulation));
+
+	}
+
 	////////////////// Utility ///////////////////////////
 
 	/**
-	 * Compares agents payoff values
+	 * Get a random neighbour agent
 	 * 
-	 * @param agent
-	 *            of comparison
-	 * @return agent with higher payoff
+	 * @return agent
 	 */
-	public Agent comparePayoff(Agent neighbour) {
+	public Agent getRandomNeighbour() {
 
-		if (this.getPayoff() > neighbour.getPayoff()) {
-			return this;
+		Bag agents = new Bag(getNeighbourhood());
+		if (agents.size() > 0) {
+			return (Agent) agents.get(random.nextInt(agents.size()));
 		}
+		return null;
+	}
 
-		return neighbour;
+	public Bag getNeighbourhood() {
+
+		Bag nodes = new Bag(network.getAllNodes());
+		Bag edges = new Bag(network.getEdges(this, nodes));
+		Bag neighbours = new Bag();
+		for (int i = 0; i < edges.size(); i++) {
+			Edge edge = (Edge) (edges.get(i));
+			Agent from = (Agent) edge.getFrom();
+			Agent to = (Agent) edge.getTo();
+
+			if (!to.equals(this)) {
+				neighbours.add(to);
+			} else {
+				if (!from.equals(this))
+					neighbours.add(from);
+			}
+		}
+		return neighbours;
 	}
 
 	//////////////////// Getter / Setter ///////////////
 
-	public boolean getStrategy() {
-		return this.currentStrategy;
+	public boolean getStrategy(int round) {
+		return currentStrategy;
+	}
+	
+	public boolean getStrategy() {		
+		return currentStrategy;		
 	}
 
-	public void setStrategy(boolean strategy) {
-		this.currentStrategy = strategy;
+	public double getPayoff(int round) {
+		return currentPayoff;
 	}
-
+	
 	public double getPayoff() {
 		return currentPayoff;
 	}
-
-	public void setPayoff(double payoff) {
-		this.currentPayoff = payoff;
+	
+	public boolean testMethod() {
+		return false;
 	}
 
 	public long getNodeId() {
 		return nodeId;
+	}
+
+	public AgentData getAgentData() {
+		return new AgentData(strategies, payoff);
 	}
 
 }

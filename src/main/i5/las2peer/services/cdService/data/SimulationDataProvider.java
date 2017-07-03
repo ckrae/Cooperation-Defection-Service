@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import i5.las2peer.api.exceptions.StorageException;
-import i5.las2peer.services.cdService.data.simulation.SimulationContainer;
+import i5.las2peer.services.cdService.data.simulation.User;
 import i5.las2peer.services.cdService.data.simulation.SimulationMeta;
 import i5.las2peer.services.cdService.data.simulation.Parameters;
 import i5.las2peer.services.cdService.data.simulation.SeriesGroup;

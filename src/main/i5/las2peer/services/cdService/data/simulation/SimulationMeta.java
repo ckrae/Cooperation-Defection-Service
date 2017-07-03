@@ -7,48 +7,57 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
-@Entity
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
+
 public class SimulationMeta implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	@Id
-	@OneToOne(fetch = FetchType.LAZY)
-	SimulationSeries series;
-	
-	@OneToOne(fetch = FetchType.LAZY)
-	private Parameters parameters;
-	
-	@OneToOne(fetch = FetchType.LAZY)
-	private Evaluation evaluation;
+	long seriesId;	
 
+	private Parameters parameters;	
+
+	private Evaluation evaluation;
+	
+	public SimulationMeta() {
+		
+	}
+	
 	public SimulationMeta(SimulationSeries series) {
 		
-		this.series = series;
+		this.seriesId = series.getSeriesId();
 		this.parameters = series.getParameters();
 		this.evaluation = series.getEvaluation();
 	}
-
-	public SimulationSeries getSeries() {
-		return series;
+	
+	@JsonProperty
+	public long getSeriesId() {
+		return seriesId;
+	}	
+	
+	@JsonSetter
+	public void setSeriesId(long seriesId) {
+		this.seriesId = seriesId;
 	}
-
-	public void setSeries(SimulationSeries series) {
-		this.series = series;
-	}
-
+	
+	@JsonProperty
 	public Parameters getParameters() {
 		return parameters;
 	}
-
+	
+	@JsonSetter
 	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
 	}
-
+	
+	@JsonProperty
 	public Evaluation getEvaluation() {
 		return evaluation;
 	}
-
+	
+	@JsonSetter
 	public void setEvaluation(Evaluation evaluation) {
 		this.evaluation = evaluation;
 	}

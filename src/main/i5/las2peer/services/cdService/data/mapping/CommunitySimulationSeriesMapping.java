@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class CommunitySimulationSeriesMapping {
 
-	private final ArrayList<CommunitySimulationDataMapping> mappings;
+	private final ArrayList<CommunityDataSetMapping> mappings;
 
 	private final long seriesId;
 	private final long graphId;
@@ -12,7 +12,7 @@ public class CommunitySimulationSeriesMapping {
 	private final long communityId;
 
 	public CommunitySimulationSeriesMapping(long seriesId, long graphId, long coverId, long communityId,
-			ArrayList<CommunitySimulationDataMapping> mappings) {
+			ArrayList<CommunityDataSetMapping> mappings) {
 
 		this.mappings = mappings;
 		this.seriesId = seriesId;
@@ -37,7 +37,7 @@ public class CommunitySimulationSeriesMapping {
 		return communityId;
 	}
 	
-	public ArrayList<CommunitySimulationDataMapping> getMappings() {
+	public ArrayList<CommunityDataSetMapping> getMappings() {
 		return mappings;
 	}
 

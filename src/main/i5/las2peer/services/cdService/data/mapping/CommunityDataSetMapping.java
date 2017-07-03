@@ -2,7 +2,10 @@ package i5.las2peer.services.cdService.data.mapping;
 
 import java.util.ArrayList;
 
-public class CommunitySimulationDataMapping {
+import javax.persistence.Entity;
+
+
+public class CommunityDataSetMapping {
 
 	private final ArrayList<Double> cooperationValues;
 	private final ArrayList<Double> payoffValues;
@@ -14,7 +17,7 @@ public class CommunitySimulationDataMapping {
 	private final long communityId;
 	private double cooperationValue;
 
-	public CommunitySimulationDataMapping(long seriesId, long dataId, long graphId, long coverId, long communityId,
+	public CommunityDataSetMapping(long seriesId, long dataId, long graphId, long coverId, long communityId,
 			ArrayList<Double> cooperationValues, ArrayList<Double> payoffValues) {
 
 		this.cooperationValues = cooperationValues;

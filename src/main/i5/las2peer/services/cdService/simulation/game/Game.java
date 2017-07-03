@@ -6,77 +6,27 @@ import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.util.Bag;
 
-/**
- * The Game
- */
-
-public class Game implements Steppable {
+public class Game {
 
 	/////////////// Attributes ///////////////
 
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * Payoff Matrix Values
-	 *  ( cc, cd ) ( R , S ) 
-	 *  ( dc, dd ) ( T , P )
-	 */
-	
-	private final double cc;
-	private final double cd;
-	private final double dd;
-	private final double dc;
+	private final double payoffAA;
+	private final double payoffAB;
+	private final double payoffBA;
+	private final double payoffBB;
 
 	private final boolean StrategyA = true; // cooperate
 	private final boolean StrategyB = false; // defect
 
-	public Game(double a, double b, double c, double d) {
+	protected Game(double aa, double ab, double ba, double bb) {
 
-		this.cc = a;
-		this.dc = b;
-		this.cd = c;
-		this.dd = d;
+		this.payoffAA = aa;
+		this.payoffAB = ab;
+		this.payoffBA = ba;
+		this.payoffBB = bb;
 	}
 
 	/////////////// Methods ///////////////////
-
-	/**
-	 * Determine the payoff values of every node
-	 */
-	@Override
-	public void step(SimState state) {
-
-		Simulation simulation = (Simulation) state;
-		updatePayoff(simulation);
-
-	}
-
-	/**
-	 * Updates the payoff Values for all nodes of a given network
-	 * 
-	 * @param agent
-	 * @param neighbours
-	 * @return payoff
-	 */
-	private void updatePayoff(Simulation simulation) {
-
-		Bag agents = new Bag(simulation.getNetwork().getAllNodes());
-		final int size = agents.size();
-		double[] newValues = new double[size];
-
-		// determine new values
-		for (int i = 0; i < size; i++) {
-			Agent agent = (Agent) agents.get(i);
-			newValues[i] = getPayoff(agent, simulation.getNeighbourhood(agent));
-		}
-
-		// adopt new values
-		for (int i = 0; i < size; i++) {
-			Agent agent = (Agent) agents.get(i);
-			agent.setPayoff(newValues[i]);
-		}
-
-	}
 
 	/**
 	 * Determine the total Payoff for a agent of all neighbour games
@@ -85,15 +35,16 @@ public class Game implements Steppable {
 	 * @param neighbours
 	 * @return payoff
 	 */
-	private double getPayoff(Agent agent, Bag neighbours) {
-
+	public double getPayoff(Agent agent) {
+		
+		Bag neighbours = agent.getNeighbourhood();
 		double payoff = 0.0;
-		for (int i = 0, si=neighbours.size(); i < si; i++) {
+		for (int i = 0, si = neighbours.size(); i < si; i++) {
 			Agent neighbour = (Agent) neighbours.get(i);
 			payoff += getPayoff(agent.getStrategy(), neighbour.getStrategy());
 		}
+		
 		return payoff;
-
 	}
 
 	/**
@@ -103,40 +54,29 @@ public class Game implements Steppable {
 	 * @param otherStrategy
 	 * @return payoff
 	 */
-	private double getPayoff(boolean myStrategy, boolean otherStrategy) {
+	protected double getPayoff(boolean myStrategy, boolean otherStrategy) {
 
-		double payoff = 0.0;
 		if (myStrategy == StrategyA) {
 			if (otherStrategy == StrategyA) {
-				// cooperate cooperate - reward
-				payoff += cc;
-
-			} else if (otherStrategy == StrategyB) {
-				// cooperate defect - sucker
-				payoff += cd;
-			}
-		} else if (myStrategy == StrategyB) {
-			if (otherStrategy == StrategyA) {
-				// defect cooperate - temptation
-				payoff += dc;
-
-			} else if (otherStrategy == StrategyB) {
-				// defect defect - punishment
-				payoff += dd;
+				return payoffAA;
+			} else {
+				return payoffAB;
 			}
 		}
-		return payoff;
-
+		if (otherStrategy == StrategyA) {
+			return payoffBA;
+		}
+		return payoffBB;
 	}
 
 	/**
-	 * Get the Payoff Scheme as Double Array {cc, cd, dc, dd}
+	 * Get the Payoff Scheme as Double Array 
 	 * 
 	 * @return double array
 	 */
 	public double[] getPayoffScheme() {
 
-		double[] result = { cc, cd, dc, dd };
+		double[] result = { payoffAA, payoffAB, payoffBA, payoffBB };
 		return result;
 	}
 

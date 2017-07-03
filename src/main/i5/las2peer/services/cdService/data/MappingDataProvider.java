@@ -9,7 +9,7 @@ import i5.las2peer.api.exceptions.StorageException;
 import i5.las2peer.services.cdService.data.mapping.CoverSimulationSeriesMapping;
 import i5.las2peer.services.cdService.data.mapping.MappingFactory;
 import i5.las2peer.services.cdService.data.network.Cover;
-import i5.las2peer.services.cdService.data.network.Network;
+import i5.las2peer.services.cdService.data.network.Graph;
 import i5.las2peer.services.cdService.data.network.NetworkAdapter;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;

@@ -8,6 +8,7 @@ import i5.las2peer.api.exceptions.RemoteServiceException;
 import i5.las2peer.api.exceptions.ServiceNotAvailableException;
 import i5.las2peer.api.exceptions.ServiceNotFoundException;
 import i5.las2peer.services.cdService.simulation.Agent;
+import sim.field.network.Network;
 
 /**
  *
@@ -19,7 +20,7 @@ public final class NetworkAdapter {
 
 	public final static String graphService = "i5.las2peer.services.ocd.ServiceClass@1.0";
 
-	private NetworkAdapter() {
+	public NetworkAdapter() {
 
 	}
 
@@ -34,41 +35,44 @@ public final class NetworkAdapter {
 		return networks;
 	}
 
-	public static Network invokeGraphById(String graphIdStr)
-			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
-
-		long graphId = Long.parseLong(graphIdStr);
-		return (inovkeGraphById(graphId));
-	}
-
 	@SuppressWarnings("unchecked")
-	public static Network inovkeGraphById(long graphId)
+	public static Graph inovkeGraphMeta(long graphId)
 			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
-
-		Network network = new Network(graphId);
 
 		HashMap<String, Object> map = (HashMap<String, Object>) Context.getCurrent().invoke(graphService,
 				"getGraphById", graphId);
-		ArrayList<ArrayList<Integer>> graph = (ArrayList<ArrayList<Integer>>) map.get("graph");
 
+		Graph network = new Graph(graphId);
+		network.setGraphName((String) map.get("name"));
+
+		return network;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static Network inovkeGraphData(long graphId)
+			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
+
+		HashMap<String, Object> map = (HashMap<String, Object>) Context.getCurrent().invoke(graphService,
+				"getGraphById", graphId);
+
+		ArrayList<ArrayList<Integer>> graph = (ArrayList<ArrayList<Integer>>) map.get("graph");
+		Network network = new Network(false);
+		int size = graph.size();
+		
 		// Add Nodes
-		HashMap<Integer, Agent> nodeKeyMap = new HashMap<Integer, Agent>();
-		for (int i = 0, length = graph.size(); i < length; i++) {
-			Agent currentAgent = new Agent(i);
-			network.addNode(currentAgent);
-			nodeKeyMap.put(i, currentAgent);
+		for (int i = 0; i < size; i++) {			
+			network.addNode(i);
 		}
 
 		// Add Edges
-		for (int i = 0, length = graph.size(); i < length; i++) {
+		for (int i = 0; i < size; i++) {	
 			ArrayList<Integer> list = graph.get(i);
-
-			for (int j = 0, size = list.size(); j < size; j++) {
-				network.addEdge(nodeKeyMap.get(i), nodeKeyMap.get(j), true);
-				network.addEdge(nodeKeyMap.get(j), nodeKeyMap.get(i), true);
+			
+			for (int j = 0, jSize = list.size(); j < jSize; j++) {
+				network.addEdge(i, j, true);
 			}
 		}
-
+		
 		return network;
 	}
 
@@ -112,12 +116,40 @@ public final class NetworkAdapter {
 			}
 		}
 
-		long graphId = (long) map.get("graphId");
 		long coverId = (long) map.get("coverId");
-		
+		long graphId = (long) map.get("GraphId");
 
-		Cover cover = new Cover(graphId, coverId, (String) map.get("algorithm"), coverList);
+		Network network = null;
+		try {
+			network = inovkeGraphData(graphId);
+		} catch (ServiceNotFoundException | ServiceNotAvailableException | RemoteServiceException e) {
+			e.printStackTrace();
+		}
 
+		Cover cover = new Cover(coverId, (String) map.get("algorithm"));
+
+		ArrayList<Community> communities = new ArrayList<Community>(coverList.size());
+		for (int i = 0; i < coverList.size(); i++) {
+			Community community = new Community(cover, coverList.get(i));
+
+			Network subNetwork = new Network(false);
+			// Compute SubGraph
+			if (network != null) {
+				// Add Nodes
+				for (int j = 0; j < coverList.get(i).size(); j++) {
+					subNetwork.addNode(coverList.get(i).get(j));
+				}
+
+				for (int j = 0; j < coverList.get(i).size(); j++) {
+					for (int k = 0; k < coverList.get(i).size(); k++) {
+
+					}
+				}
+			}
+			communities.add(community);
+		}
+
+		cover.setCommunities(communities);
 		return cover;
 	}
 
@@ -131,7 +163,6 @@ public final class NetworkAdapter {
 		return coverList;
 	}
 
-	@SuppressWarnings("unchecked")
 	public static Long getUserId()
 			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
 
@@ -140,7 +171,6 @@ public final class NetworkAdapter {
 		return name;
 	}
 
-	@SuppressWarnings("unchecked")
 	public static String getUserName()
 			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
 

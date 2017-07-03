@@ -8,10 +8,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import i5.las2peer.api.Service;
 import i5.las2peer.api.exceptions.StorageException;
 import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.PastryNodeImpl;
@@ -19,7 +26,8 @@ import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.persistency.Envelope;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
-import i5.las2peer.services.cdService.data.network.Network;
+import i5.las2peer.services.cdService.data.EntityHandler;
+import i5.las2peer.services.cdService.data.network.Graph;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.tools.CryptoException;
 import i5.las2peer.tools.SerializationException;
@@ -36,7 +44,6 @@ public class ServiceTest {
 	private static final String HTTP_ADDRESS = "http://127.0.0.1";
 	private static final int HTTP_PORT = WebConnector.DEFAULT_HTTP_PORT;
 
-	private static ArrayList<PastryNodeImpl> nodes;
 	private static LocalNode node;
 	private static WebConnector connector;
 	private static ByteArrayOutputStream logStream;
@@ -49,6 +56,12 @@ public class ServiceTest {
 	private static final String passAbel = "abelspass";
 
 	private static final String mainPath = "cdService/";
+	
+	private static final String PERSISTENCE_UNIT_NAME = "SimulationTest";
+	private static final EntityManagerFactory factory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME);
+	private static final EntityHandler entityHandler = EntityHandler.getTestInstance();
+	
+	private long networkId;
 
 	/**
 	 * Called before the tests start.
@@ -61,7 +74,6 @@ public class ServiceTest {
 	@BeforeClass
 	public static void startServer() throws Exception {
 
-		//nodes = TestSuite.launchNetwork(1, STORAGE_MODE.FILESYSTEM, true);
 		node = LocalNode.launchNode();
 		agentAdam = MockAgentFactory.getAdam();
 		agentAdam.unlockPrivateKey(passAdam);
@@ -75,7 +87,7 @@ public class ServiceTest {
 
 		ServiceAgent testService = ServiceAgent
 				.createServiceAgent(ServiceNameVersion.fromString(CDService.class.getName() + "@1.0"), "a pass");
-		testService.unlockPrivateKey("a pass");
+		testService.unlockPrivateKey("a pass");				
 
 		node.registerReceiver(testService);
 
@@ -88,10 +100,28 @@ public class ServiceTest {
 		agentAdam = MockAgentFactory.getAdam();
 		agentEve = MockAgentFactory.getEve();
 		agentAbel = MockAgentFactory.getAbel();
+		
+		
 
-		storeTestNetwork();
 	}
+	
+	@Before
+	public void storeTestNetwork() {		
 
+		Graph network = new Graph();
+		network.setGraphName("TestGraph");		
+		EntityManager em = factory.createEntityManager();
+		em.getTransaction().begin();
+		em.persist(network);
+		em.flush();
+		networkId = network.getNetworkId();
+		System.out.println(networkId);		
+		em.getTransaction().commit();
+		em.close();
+		
+	}
+	
+	
 	/**
 	 * Called after the tests have finished. Shuts down the server and prints
 	 * out the connector log file for reference.
@@ -123,36 +153,32 @@ public class ServiceTest {
 
 		try {
 			c.setLogin(Long.toString(agentAdam.getId()), passAdam);
-			ClientResponse result;
+			ClientResponse result;			
 			
-			
-			
-			result = c.sendRequest("POST", mainPath + "simulation",	"{\"graphId\":0,\"dynamic\":\"Replicator\",\"dynamicValues\":[],\"payoffValues\":[1.0,2.0,3.1,0.0],\"iterations\":20}", "application/json", "text/plain", new HashMap<String,String>());
-			assertEquals(200, result.getHttpCode());
-			assertTrue(result.getResponse().trim().contains("done"));
+			// No valid Payoff
+			result = c.sendRequest("POST", mainPath + "simulation",	"{\"graphId\":"+ networkId + ",\"dynamic\":\"\",\"dynamicValues\":[],\"payoffValues\":[1.0,2.0,3.1,0.0],\"iterations\":20}", "application/json", "text/plain", new HashMap<String,String>());
+			assertEquals(400, result.getHttpCode());
 			System.out.println("Result of 'testPost': " +	result.getResponse().trim());
+			assertTrue(result.getResponse().contains("payoff"));
+			
+			// No OCD Service accessible
+			result = c.sendRequest("POST", mainPath + "simulation",	"{\"graphId\":"+ networkId + ",\"dynamic\":\"Replicator\",\"dynamicValues\":[],\"payoffValues\":[1.0,2.0,3.1,0.0],\"iterations\":20}", "application/json", "text/plain", new HashMap<String,String>());
+			assertEquals(500, result.getHttpCode());
+			assertTrue(result.getResponse().contains("invocation"));
+			System.out.println("Result of 'testPost': " +	result.getResponse().trim());
+		
+
+			
+		
+		
+		
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception: " + e);
 		}
 	}
 
-	private static void storeTestNetwork() {
-
-		Network network = new Network(0);
-
-		long userId = agentAdam.getId();
-		String identifier = CDService.SERVICE_PREFIX + String.valueOf(userId) + "#network" + String.valueOf(0);
-
-		
-		try {
-			Envelope env = node.createEnvelope(identifier, network, agentAdam);
-			node.storeEnvelope(env, agentAdam, userId);
-
-		} catch (CryptoException | SerializationException | StorageException e) {
-			e.printStackTrace();
-		}
-	}
+	
 	
 	
 }
