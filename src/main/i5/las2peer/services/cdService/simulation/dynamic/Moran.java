@@ -33,7 +33,7 @@ public class Moran extends Dynamic {
 
 		Bag neighbours = agent.getNeighbourhood();
 		int size = neighbours.size();
-		int round = simulation.getRound();
+		int round = simulation.getRound()-1;
 		MersenneTwisterFast random = simulation.random;
 		
 		boolean[] strategies = new boolean[size];
@@ -46,7 +46,7 @@ public class Moran extends Dynamic {
 			payoff[i] = neighbour.getPayoff(round);
 		}
 		
-		return getNewStrategy(round, strategies, payoff, null);
+		return getNewStrategy(round, strategies, payoff, random);
 	}
 	
 	/// Algorithm

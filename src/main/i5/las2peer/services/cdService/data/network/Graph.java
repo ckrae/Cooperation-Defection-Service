@@ -2,7 +2,6 @@ package i5.las2peer.services.cdService.data.network;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.persistence.Basic;
@@ -14,7 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,9 +22,7 @@ import i5.las2peer.api.exceptions.RemoteServiceException;
 import i5.las2peer.api.exceptions.ServiceNotAvailableException;
 import i5.las2peer.api.exceptions.ServiceNotFoundException;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
-import i5.las2peer.services.cdService.simulation.Agent;
 import sim.field.network.Network;
-import sim.util.Bag;
 
 @Entity(name = "Networks")
 public class Graph implements Serializable {

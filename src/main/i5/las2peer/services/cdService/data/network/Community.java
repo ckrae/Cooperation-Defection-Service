@@ -1,19 +1,23 @@
 package i5.las2peer.services.cdService.data.network;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Basic;
 import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-@Entity
-public class Community {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+@Entity
+public class Community implements PropertyInterface {
+	
+	///// Entity Fields /////
+	
 	@Id
 	@GeneratedValue
 	private long communityId;
@@ -24,57 +28,55 @@ public class Community {
 	@ElementCollection
 	private List<Integer> members;
 
-	@Basic
-	private int nodes;
-
-	@Basic
-	private int edges;
-
-	@Basic
-	double density;
-
-	@Basic
-	double averageDegree;
-
-	@Basic
-	double clusteringCoefficient;
+	@Embedded
+	private Properties properties;
 	
 	public Community() {
 		
 	}
 	
-	protected Community(Cover cover, ArrayList<Integer> members) {
-		this.members = members;
-	}
-
-	public List<Integer> getMembers() {
-		return this.members;
-	}
-
+	///// Getter /////
+	
+	@JsonProperty
 	public long getCommunityId() {
 		return communityId;
 	}
-
-	//// Properties ////
-
-	public double getDensity() {
-
-		return this.density;
+	
+	@JsonIgnore
+	public Cover getCover() {
+		return cover;
+	}
+	
+	@JsonProperty
+	public List<Integer> getMembers() {
+		return members;
+	}
+	
+	@JsonProperty
+	public Properties getProperties() {
+		return properties;
+	}
+	
+	///// Setter /////
+	
+	public void setCommunityId(long communityId) {
+		this.communityId = communityId;
 	}
 
-	public double getAverageDegree() {
-
-		return this.averageDegree;
+	public void setCover(Cover cover) {
+		this.cover = cover;
 	}
 
-	public double getSize() {
-
-		return this.nodes;
+	public void setMembers(List<Integer> members) {
+		this.members = members;
 	}
 
-	public double getClusteringCoefficient() {
-
-		return this.clusteringCoefficient;
+	public void setProperties(Properties properties) {
+		this.properties = properties;
 	}
+	
+
+
+	
 
 }

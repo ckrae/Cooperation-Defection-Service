@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.persistence.EntityManager;
@@ -18,19 +17,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import i5.las2peer.api.Service;
-import i5.las2peer.api.exceptions.StorageException;
 import i5.las2peer.p2p.LocalNode;
-import i5.las2peer.p2p.PastryNodeImpl;
 import i5.las2peer.p2p.ServiceNameVersion;
-import i5.las2peer.persistency.Envelope;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.cdService.data.EntityHandler;
 import i5.las2peer.services.cdService.data.network.Graph;
 import i5.las2peer.testing.MockAgentFactory;
-import i5.las2peer.tools.CryptoException;
-import i5.las2peer.tools.SerializationException;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
 import i5.las2peer.webConnector.client.MiniClient;

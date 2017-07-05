@@ -45,10 +45,9 @@ public class EntityHandler {
 		}
 		return databaseManager;
 	}
-	
-	
+
 	///////////// Simulation /////////////////
-	
+
 	protected SimulationSeries getSimulationSeries(long seriesId) {
 
 		EntityManager em = factory.createEntityManager();
@@ -105,48 +104,45 @@ public class EntityHandler {
 	}
 
 	public List<SimulationSeries> getSimulationSeries(Parameters parameters) {
-		
-		if(parameters == null)
+
+		if (parameters == null)
 			return getSimulationSeries();
-		
+
 		EntityManager em = factory.createEntityManager();
 
 		TypedQuery<SimulationSeries> query = em.createQuery(
-				"SELECT s FROM SimulationSeries s JOIN Parameters p WHERE p.graphId =:graphId AND p.dynamic =:dynamic", SimulationSeries.class);
+				"SELECT s FROM SimulationSeries s JOIN Parameters p WHERE p.graphId =:graphId AND p.dynamic =:dynamic",
+				SimulationSeries.class);
 		query.setParameter("graphId", parameters.getGraphId());
 		query.setParameter("dynamic", parameters.getDynamic());
-		 List<SimulationSeries> seriesList = query.getResultList();
+		List<SimulationSeries> seriesList = query.getResultList();
 		return seriesList;
 	}
-	
+
 	public List<SimulationSeries> getSimulationSeries() {
 
 		EntityManager em = factory.createEntityManager();
 
-		TypedQuery<SimulationSeries> query = em.createQuery(
-				"SELECT s FROM SimulationSeries s", SimulationSeries.class);
-		 List<SimulationSeries> seriesList = query.getResultList();
+		TypedQuery<SimulationSeries> query = em.createQuery("SELECT s FROM SimulationSeries s", SimulationSeries.class);
+		List<SimulationSeries> seriesList = query.getResultList();
 		return seriesList;
 	}
-	
+
 	//////////////// Network ///////////////////////
-	
+
 	protected Graph getNetwork(long networkId) {
-		
+
 		EntityManager em = factory.createEntityManager();
 		try {
-		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.networkId =:id",
-				Graph.class);
-		query.setParameter("id", networkId);
-		Graph network = query.getSingleResult();		
-		return network;
-		} catch( Exception e ){
+			TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.ocdId =:id", Graph.class);
+			query.setParameter("id", networkId);
+			Graph network = query.getSingleResult();
+			return network;
+		} catch (Exception e) {
 			return null;
 		}
-		
-		
 	}
-	
+
 	protected long storeNetwork(Graph network) {
 
 		EntityManager em = factory.createEntityManager();
@@ -154,7 +150,7 @@ public class EntityHandler {
 		em.persist(network);
 		em.flush();
 		em.getTransaction().commit();
-		
+
 		long networkId = network.getNetworkId();
 		em.close();
 		return networkId;
@@ -163,44 +159,45 @@ public class EntityHandler {
 	protected List<Graph> getNetworks(List<Long> networkIds) {
 
 		EntityManager em = factory.createEntityManager();
-		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.networkId IN :ids",
-				Graph.class);
+		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.ocdId IN :ids", Graph.class);
 		query.setParameter("ids", networkIds);
-		List<Graph> networks = query.getResultList();		
+		List<Graph> networks = query.getResultList();
 		return networks;
 	}
 
 	protected List<Graph> getAllNetworks() {
-		
+
 		EntityManager em = factory.createEntityManager();
-		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n",
-				Graph.class);
-		List<Graph> networks = query.getResultList();		
+		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n", Graph.class);
+		List<Graph> networks = query.getResultList();
 		return networks;
 	}
 
-	protected Cover getCover(Graph network, String algorithm)
-			throws StorageException, ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
+	//////////////// Cover //////////////////
 
-		Cover cover = NetworkAdapter.inovkeCoverByAlgorithm(network.getNetworkId(), algorithm);
-		return cover;
-	}
+	protected Cover getCover(long coverId) {
 
-	protected Cover getCover(long graphId, long coverId)
-			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
-
-		return NetworkAdapter.inovkeCoverById(graphId, coverId);
-
-	}
-
-	protected ArrayList<Cover> getCovers(ArrayList<Graph> networks, String algorithm) throws StorageException {
-
-		ArrayList<Cover> covers = new ArrayList<Cover>(networks.size());
-		for (Graph network : networks) {
-
+		EntityManager em = factory.createEntityManager();
+		try {
+			TypedQuery<Cover> query = em.createQuery("SELECT n FROM Cover AS n WHERE n.ocdId =:id", Cover.class);
+			query.setParameter("id", coverId);
+			Cover cover = query.getSingleResult();
+			return cover;
+		} catch (Exception e) {
+			return null;
 		}
+	}
 
-		return covers;
+	protected long storeCover(Cover cover) {
+
+		EntityManager em = factory.createEntityManager();
+		em.getTransaction().begin();
+		em.persist(cover);
+		em.flush();
+		em.getTransaction().commit();
+		long coverId = cover.getCoverId();
+		em.close();
+		return coverId;
 	}
 
 }

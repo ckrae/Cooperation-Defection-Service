@@ -244,8 +244,7 @@ public class CDService extends RESTService {
 		}
 
 		/**
-		 * Starts the simulation of a evolutionary cooperation and defection
-		 * game
+		 * Starts the simulation of a evolutionary cooperation and defection game
 		 * 
 		 * @param JSON
 		 * 
@@ -283,8 +282,16 @@ public class CDService extends RESTService {
 
 				if (parameters.getBenefit() == 0.0 && parameters.getCost() == 0.0) {
 					return Response.status(Status.BAD_REQUEST).entity("invalid payoff").build();
-
 				}
+
+				double benefit = parameters.getBenefit();
+				double cost = parameters.getCost();
+
+				parameters.setPayoffCC(benefit - cost);
+				parameters.setPayoffCD(-cost);
+				parameters.setPayoffDC(benefit);
+				parameters.setPayoffDD(0.0);
+
 			}
 
 			parameters.normalize();
@@ -426,7 +433,7 @@ public class CDService extends RESTService {
 
 			String username = ((UserAgent) Context.getCurrent().getMainAgent()).getLoginName();
 
-			ArrayList<Integer> covers = null;
+			List<Integer> covers;
 			try {
 				covers = NetworkAdapter.inovkeCovers(graphId);
 			} catch (Exception e) {
@@ -475,33 +482,9 @@ public class CDService extends RESTService {
 				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
 		public Response getSimulationMapping(@PathParam("seriesId") long seriesId) {
 
-			SimulationSeries series;
+			List<CoverSimulationSeriesMapping> mappings;
 			try {
-				series = simulationDataProvider.getSimulationSeries(seriesId);
-			} catch (Exception e) {
-				logger.log(Level.WARNING, "", e);
-				e.printStackTrace();
-				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("fail to get simulation series").build();
-			}
-
-			ArrayList<Cover> covers = new ArrayList<Cover>();
-			try {
-				ArrayList<Integer> coverIds = NetworkAdapter.inovkeCovers(series.getParameters().getGraphId());
-
-				for (Integer coverId : coverIds) {
-					covers.add(NetworkAdapter.inovkeCoverById(series.getParameters().getGraphId(), coverId));
-				}
-			} catch (Exception e) {
-				logger.log(Level.WARNING, "", e);
-				e.printStackTrace();
-				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("fail to get covers").build();
-			}
-
-			ArrayList<SimulationSeries> seriesList = new ArrayList<SimulationSeries>(1);
-			seriesList.add(series);
-			ArrayList<CoverSimulationSeriesMapping> mappings = null;
-			try {
-				mappings = mappingDataProvider.getCoverSimulationSeriesMappings(covers, seriesList);
+				mappings = mappingDataProvider.getCoverSimulationSeriesMappings(seriesId);
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "", e);
 				e.printStackTrace();

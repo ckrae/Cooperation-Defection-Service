@@ -11,8 +11,17 @@ public class WinStayLoseShift extends Dynamic {
 
 	@Override
 	public boolean getNewStrategy(Agent agent, Simulation simulation) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		if(simulation.getRound()<2)
+			return agent.getStrategy();
+		
+		int round = simulation.getRound()-1;
+		boolean myStrategy = agent.getStrategy(round);
+		
+		double myPayoff = agent.getPayoff(round);
+		double myLastPayoff = agent.getPayoff(round-1);	
+		
+		return getNewStrategy(myStrategy, myPayoff, myLastPayoff);
 	}
 	
 	protected boolean getNewStrategy(boolean myStrategy, double myPayoff, double myLastPayoff) {

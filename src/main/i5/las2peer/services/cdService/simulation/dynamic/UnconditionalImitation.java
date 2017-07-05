@@ -1,7 +1,5 @@
 package i5.las2peer.services.cdService.simulation.dynamic;
 
-import java.util.ArrayList;
-
 import i5.las2peer.services.cdService.simulation.Agent;
 import i5.las2peer.services.cdService.simulation.Simulation;
 import sim.util.Bag;
@@ -34,7 +32,7 @@ public class UnconditionalImitation extends Dynamic {
 	/// Dependencies
 	public boolean getNewStrategy(Agent agent, Simulation simulation) {
 		
-		int round = simulation.getRound();
+		int round = simulation.getRound()-1;
 		Bag neighbours = agent.getNeighbourhood();
 		int size = neighbours.size();		
 		boolean[] strategies = new boolean[size];

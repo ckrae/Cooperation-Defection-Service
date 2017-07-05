@@ -5,63 +5,92 @@ import java.util.List;
 
 import i5.las2peer.services.cdService.data.network.Community;
 import i5.las2peer.services.cdService.data.network.Cover;
+import i5.las2peer.services.cdService.data.simulation.AgentData;
 import i5.las2peer.services.cdService.data.simulation.DataSet;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 
 public class MappingFactory {
 
-
-	public static CoverSimulationSeriesMapping build(Cover cover, SimulationSeries series) {
-
-		ArrayList<CommunitySimulationSeriesMapping> list = new ArrayList<CommunitySimulationSeriesMapping>();
-		List<Community> communities = null;
+	public CoverSimulationSeriesMapping build(Cover cover, SimulationSeries series) {
+		
+		if(cover == null || series == null) 
+			return null;
+		
+		List<CommunitySimulationSeriesMapping> list = new ArrayList<CommunitySimulationSeriesMapping>();
+		List<Community> communities = cover.getCommunities();
 		for (int i = 0, size = communities.size(); i < size; i++) {
 			list.add(getCommunitySimulationSeriesMapping(communities.get(i), series));
 		}
+		
+		CoverSimulationSeriesMapping mapping = new CoverSimulationSeriesMapping();
+		mapping.setCover(cover);
+		mapping.setMappings(list);
 
-		return new CoverSimulationSeriesMapping(series.getSeriesId(), cover.getGraphId(), cover.getCoverId(), list);
+		return mapping;
 	}
 
-	private static CommunitySimulationSeriesMapping getCommunitySimulationSeriesMapping(Community community,
+	public CommunitySimulationSeriesMapping getCommunitySimulationSeriesMapping(Community community,
 			SimulationSeries series) {
-
-		ArrayList<CommunityDataSetMapping> list = new ArrayList<CommunityDataSetMapping>();
+		
+		if(community == null || series == null)
+			return null;
+		
+		List<CommunityDataSetMapping> list = new ArrayList<CommunityDataSetMapping>();
 		List<DataSet> datasets = series.getDatasets();
-		for (int i = 0, size = datasets.size(); i < size; i++) {
-			//list.add(getCommunitySimulationSeriesMapping(community, datasets.get(i)));
+		double cooperationValue = 0.0;
+		
+		int size = datasets.size();
+		for (int i = 0; i < size; i++) {
+			CommunityDataSetMapping mapping = getCommunityDatasetMapping(community, datasets.get(i));
+			list.add(mapping);
+			cooperationValue += mapping.getCooperationValue();
 		}
-
-		return new CommunitySimulationSeriesMapping(series.getSeriesId(), series.getParameters().getGraphId(),
-				community.getCommunityId(), community.getCommunityId(), list);
+		cooperationValue = cooperationValue / size;
+		
+		CommunitySimulationSeriesMapping mapping = new CommunitySimulationSeriesMapping();
+		mapping.setSeries(series);
+		mapping.setMappings(list);
+		mapping.setCooperationValue(cooperationValue);
+				
+		return mapping;
 	}
 
-	/*
-	private static CommunitySimulationDataMapping getCommunitySimulationSeriesMapping(Community community,
-			DataSet simulationData) {
-		ArrayList<Double> values = getCommunityCooperationValues(simulationData.getNodeStrategies(),
-				 community.getMembers());
-		return new CommunitySimulationDataMapping(0, simulationData.getDataId(), 0, community.getCoverId(), community.getCommunityId(), values, null);
-	}
-*/
-	private static ArrayList<Double> getCommunityCooperationValues(ArrayList<ArrayList<Boolean>> nodeStrategies,
-			ArrayList<Integer> arrayList) {
+	public CommunityDataSetMapping getCommunityDatasetMapping(Community community, DataSet dataSet) {
+		
+		if(community == null || dataSet == null)
+			return null;
+		
+		List<Double> cooperationValues = getCommunityCooperationValues(dataSet.getAgentData(), community.getMembers());
+		
+		CommunityDataSetMapping mapping = new CommunityDataSetMapping();
+		mapping.setCommunity(community);
+		mapping.setDataSet(dataSet);		
+		mapping.setCooperationValues(cooperationValues);
+		mapping.setCooperationValue(cooperationValues.get(cooperationValues.size()-1));
 
-		ArrayList<Double> cooperationValues = new ArrayList<Double>();
-		for (int round = 0, maxRound = nodeStrategies.get(0).size(); round < maxRound; round++) {
+		return mapping;
+	}
+
+	public List<Double> getCommunityCooperationValues(List<AgentData> agentList, List<Integer> memberList) {
+
+		if (agentList == null || memberList == null || memberList.size() == 0 || agentList.size() == 0)
+			return new ArrayList<Double>();
+
+		List<Double> cooperationValues = new ArrayList<Double>();
+		int maxRounds = agentList.get(0).getStrategies().size();
+		for (int round = 0; round < maxRounds; round++) {
 
 			int cooperators = 0;
-			int defectors = 0;
-			for (int memberInt = 0, size = arrayList.size(); memberInt < size; memberInt++) {
-				if (nodeStrategies.get(memberInt).get(round)) {
+			int maxMembers = memberList.size();
+			for (int i = 0; i < maxMembers; i++) {
+				int intMember = memberList.get(i);
+				if (agentList.get(intMember).getStrategies().get(round)) {
 					cooperators++;
-				} else {
-					defectors++;
 				}
-				double value = cooperators / (cooperators + defectors);
-				cooperationValues.add(value);
 			}
+			double value = cooperators / maxMembers;
+			cooperationValues.add(value);
 		}
-
 		return cooperationValues;
 	}
 

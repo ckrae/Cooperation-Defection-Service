@@ -65,6 +65,7 @@ public class Agent implements Steppable {
 
 	/////////////////// Steps ///////////////////////////
 
+	@Override
 	public void step(SimState state) {
 		Simulation simulation = (Simulation) state;
 		currentPayoff = game.getPayoff(this);

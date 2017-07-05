@@ -1,9 +1,6 @@
 package i5.las2peer.services.cdService.simulation.game;
 
 import i5.las2peer.services.cdService.simulation.Agent;
-import i5.las2peer.services.cdService.simulation.Simulation;
-import sim.engine.SimState;
-import sim.engine.Steppable;
 import sim.util.Bag;
 
 public class Game {

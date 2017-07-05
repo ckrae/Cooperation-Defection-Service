@@ -12,7 +12,6 @@ import i5.las2peer.services.cdService.simulation.game.GameFactory;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
-import sim.field.network.Edge;
 import sim.field.network.Network;
 import sim.util.Bag;
 
@@ -120,7 +119,8 @@ public class Simulation extends SimState {
 				cooperation++;
 			
 			stopper.add(schedule.scheduleRepeating(1, 2, agent));
-			stopper.add(schedule.scheduleRepeating(2, 1, new Steppable() { public void step(SimState state) { agent.updateDynamicStep(state) ;} }));
+			stopper.add(schedule.scheduleRepeating(2, 1, new Steppable() { @Override
+			public void step(SimState state) { agent.updateDynamicStep(state) ;} }));
 			
 		}
 		

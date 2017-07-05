@@ -227,13 +227,12 @@ public class Parameters implements Serializable {
 	public void normalize() {
 
 		// normalize payoff values
-		int size = 4;
-		double total = payoffCC + payoffCD + payoffDC + payoffDD;
+		double total = Math.abs(payoffCC) + Math.abs(payoffCD) + Math.abs(payoffDC) + Math.abs(payoffDD);
 		if (total != 0.0) {
-			payoffCC = payoffCC / size;
-			payoffCD = payoffCD / size;
-			payoffDC = payoffDC / size;
-			payoffDD = payoffDD / size;
+			payoffCC = payoffCC / total;
+			payoffCD = payoffCD / total;
+			payoffDC = payoffDC / total;
+			payoffDD = payoffDD / total;
 		}
 
 	}

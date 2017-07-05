@@ -27,7 +27,9 @@ public class DynamicFactory {
 			return (new UnconditionalImitation());
 		case MORAN:
 			return (new Moran());
-
+			
+		case WS_LS:
+			return (new WinStayLoseShift());
 		default:
 			return null;
 		}

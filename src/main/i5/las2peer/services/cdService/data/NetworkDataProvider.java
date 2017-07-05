@@ -14,8 +14,6 @@ import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.cdService.data.network.Cover;
 import i5.las2peer.services.cdService.data.network.Graph;
 import i5.las2peer.services.cdService.data.network.NetworkAdapter;
-import i5.las2peer.services.cdService.simulation.Agent;
-import sim.util.Bag;
 
 public class NetworkDataProvider {
 	

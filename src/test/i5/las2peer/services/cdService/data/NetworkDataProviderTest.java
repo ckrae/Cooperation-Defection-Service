@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import i5.las2peer.api.exceptions.ServiceInvocationException;
 import i5.las2peer.services.cdService.data.network.Graph;
-import i5.las2peer.services.cdService.data.network.NetworkAdapter;
 
 public class NetworkDataProviderTest {
 	
