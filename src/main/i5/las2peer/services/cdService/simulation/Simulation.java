@@ -44,6 +44,10 @@ public class Simulation extends SimState {
 
 	//// Constructor
 
+	public Simulation() {
+		this(System.currentTimeMillis());
+	}
+
 	public Simulation(long seed, Network network, Game game, Dynamic dynamic) {
 		super(seed);
 
@@ -56,22 +60,24 @@ public class Simulation extends SimState {
 
 	public Simulation(long seed) {
 		super(seed);
-		
+
 		Network netw = new Network(false);
-		
-		ArrayList<Agent> agentList = new ArrayList<Agent>(20);
-		for(int i=0; i<20; i++) {
-			agentList.add(i, new Agent(i));
-			netw.addNode(agentList.get(i));
-		}
-		for(int i=0; i<20; i++) {
-			netw.addEdge(agentList.get(random.nextInt(20)), agentList.get(random.nextInt(20)), 1);
-		}
 		
 		this.network = netw;
 		this.game = GameFactory.getInstance().build(2, 4);
 		this.dynamic = DynamicFactory.getInstance().build(DynamicType.REPLICATOR, 1.5);
 		this.recorder = new DataRecorder(this);
+		
+		ArrayList<Agent> agentList = new ArrayList<Agent>(20);
+		for (int i = 0; i < 20; i++) {
+			agentList.add(i, new Agent(i));
+			netw.addNode(agentList.get(i));
+		}
+		for (int i = 0; i < 20; i++) {
+			netw.addEdge(agentList.get(random.nextInt(19)), agentList.get(random.nextInt(19)), 1);
+		}
+
+		
 	}
 
 	public static void main(String[] args) {
@@ -91,10 +97,10 @@ public class Simulation extends SimState {
 		ArrayList<Stoppable> stopper = new ArrayList<Stoppable>(4);
 		stopper.add(schedule.scheduleRepeating(1, 3, recorder));
 
-
 		// Set random strategies 50/50
 		Bag agents = new Bag(network.getAllNodes());
 		int size = agents.size();
+
 		int cooperation = 0;
 
 		for (int i = 0; i < size; i++) {
@@ -111,32 +117,36 @@ public class Simulation extends SimState {
 				// random
 				strategy = random.nextBoolean();
 			}
-			
+
 			// Initialize Agent
 			Agent agent = (Agent) agents.get(i);
 			agent.initialize(strategy, this);
 			if (strategy)
 				cooperation++;
 			
+			System.out.println(agent);
 			stopper.add(schedule.scheduleRepeating(1, 2, agent));
-			stopper.add(schedule.scheduleRepeating(2, 1, new Steppable() { @Override
-			public void step(SimState state) { agent.updateDynamicStep(state) ;} }));
-			
+			stopper.add(schedule.scheduleRepeating(2, 1, new Steppable() {
+				@Override
+				public void step(SimState state) {
+					agent.updateDynamicStep(state);
+				}
+			}));
+
 		}
-		
+
 		breakCondition = new BreakCondition(stopper);
 		breakCondition.add(schedule.scheduleRepeating(1, 4, breakCondition));
-		
-		
+
 	}
 
 	public boolean isBreakCondition() {
-		
-		if(this.getRound() > 4) {
+
+		if (this.getRound() > 4) {
 			return breakCondition.isBreakCondition(this);
 		}
 		return false;
-		
+
 	}
 
 	//////// Simulation Data /////////
@@ -208,6 +218,10 @@ public class Simulation extends SimState {
 	public DataSet getSimulationData() {
 		return recorder.getSimulationData();
 	}
+	
+	public boolean hideSimulationData() {
+		return true;
+	}
 
 	/////// Get Simulation Settings /////////
 
@@ -221,12 +235,21 @@ public class Simulation extends SimState {
 	public Network getNetwork() {
 		return network;
 	}
+	
+	public boolean hideNetwork() {
+		return true;
+	}
+	
 
 	/**
 	 * @return the game
 	 */
 	public Game getGame() {
 		return game;
+	}
+	
+	public boolean hideGame() {
+		return true;
 	}
 
 	/**
@@ -236,17 +259,19 @@ public class Simulation extends SimState {
 		return dynamic;
 	}
 	
+	public boolean hideDynamic() {
+		return true;
+	}
+
 	/**
 	 * @return the recorder
 	 */
 	public DataRecorder getDataRecorder() {
-		return recorder;		
+		return recorder;
 	}
 
-	public double[] getPayoffScheme() {
-
-		return this.getGame().getPayoffScheme();
-
+	public boolean hideDataRecorder() {
+		return true;
 	}
 
 }

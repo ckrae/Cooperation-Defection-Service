@@ -1,35 +1,28 @@
 package i5.las2peer.services.cdService.data.simulation;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Basic;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.Embeddable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Entity
+@Embeddable
 public class Evaluation implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	///////// Entity Fields ///////////
 
-	@Id
-	@OneToOne(fetch = FetchType.LAZY)
-	SimulationSeries series;
-
 	@Basic
-	private double averageCooperationValue;
+	private double average;
 
 	@Basic
 	private double variance;
 
 	@Basic
-	private double standartDeviation;
+	private double deviation;
 
 	/////////// Constructor ///////////
 
@@ -37,19 +30,27 @@ public class Evaluation implements Serializable {
 
 	}
 
-	public Evaluation(SimulationSeries series) {
+	public Evaluation(double[] values) {
 
-		this.series = series;
+		this.average = calculateAverageValue(values);
+		this.variance = calculateVariance(values, average);
+		this.deviation = calculateStandartDeviation(variance);
+	}
 
-		double[] values = series.getLastCooperationValues();
-		this.averageCooperationValue = calculateAverageCooperationValue(values);
-		this.variance = calculateVariance(values, averageCooperationValue);
-		this.standartDeviation = calculateStandartDeviation(variance);
+	public Evaluation(List<Double> list) {
+
+		double[] values = new double[list.size()];
+		for (int i = 0; i < list.size(); i++)
+			values[i] = list.get(i);
+
+		this.average = calculateAverageValue(values);
+		this.variance = calculateVariance(values, average);
+		this.deviation = calculateStandartDeviation(variance);
 	}
 
 	/////////// Calculations ///////////
 
-	private double calculateAverageCooperationValue(double[] values) {
+	private double calculateAverageValue(double[] values) {
 
 		if (values == null)
 			return 0.0;
@@ -81,25 +82,41 @@ public class Evaluation implements Serializable {
 	}
 
 	//////////// Getter /////////////
-	
-	@JsonIgnore
-	public SimulationSeries getSeries() {
-		return this.series;
-	}
-	
+
 	@JsonProperty
-	public double getAverageCooperationValue() {
-		return this.averageCooperationValue;
+	public double getAverageValue() {
+		return this.average;
 	}
-	
+
 	@JsonProperty
 	public double getVariance() {
 		return this.variance;
 	}
-	
+
 	@JsonProperty
-	public double getStandartDeviation() {
-		return this.standartDeviation;
+	public double getDeviation() {
+		return this.deviation;
 	}
 
+	/////////// Print ///////////
+	
+	public String toTableLine() {		
+
+		StringBuilder line = new StringBuilder();		
+		line.append(getAverageValue()).append("\t");
+		line.append(getVariance()).append("\t");
+		line.append(getDeviation()).append("\t");
+		
+		return line.toString();		
+	}	
+	
+	public String toHeadLine(String prefix, String suffix) {
+			
+		StringBuilder line = new StringBuilder();		
+		line.append(prefix).append("average").append(suffix).append("\t");
+		line.append(prefix).append("variance").append(suffix).append("\t");
+		line.append(prefix).append("deviation").append(suffix).append("\t");
+		
+		return line.toString();		
+	}
 }

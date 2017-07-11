@@ -17,8 +17,7 @@ public class Replicator extends Dynamic {
 
 	final static DynamicType TYPE = DynamicType.REPLICATOR;
 
-	/////////////// Constructor ////////////
-
+	/////////////// Constructor ////////////	
 	protected Replicator(double[] value) {
 
 		super(value);
@@ -27,15 +26,26 @@ public class Replicator extends Dynamic {
 	public Replicator(double value) {
 		this(new double[]{value});
 	}
+	
+	public Replicator() {
+		
+	}
 
 	/////////////// Methods /////////////////
+	
+	@Override
+	public DynamicType getDynamicType() {
+		return Replicator.TYPE;
+	}
 
 	/// Dependencies
 	@Override
 	public boolean getNewStrategy(Agent agent, Simulation simulation) {
 		
 		int round = simulation.getRound()-1;
-		Agent neighbour = agent.getRandomNeighbour();
+		MersenneTwisterFast random = simulation.random;
+				
+		Agent neighbour = agent.getRandomNeighbour(random);
 		if (neighbour == null)
 			return agent.getStrategy(round);
 		
@@ -43,19 +53,18 @@ public class Replicator extends Dynamic {
 		boolean otherStrategy = neighbour.getStrategy(round);
 		double myPayoff = agent.getPayoff(round);
 		double otherPayoff = neighbour.getPayoff(round);
-		MersenneTwisterFast random = simulation.random;
 		int myNeighSize = agent.getNeighbourhood().size();
 		int otherNeighSize = neighbour.getNeighbourhood().size();
 		
-		return getNewStrategy(myStrategy, otherStrategy, myPayoff, otherPayoff, random, myNeighSize, otherNeighSize);
+		return getNewStrategy(myStrategy, otherStrategy, myPayoff, otherPayoff, random, myNeighSize, otherNeighSize, getValues()[0]);
 	}
 	
 	/// Algorithm
 	protected boolean getNewStrategy(boolean myStrategy, boolean otherStrategy, double myPayoff, double otherPayoff,
-			MersenneTwisterFast random, int myNeighSize, int otherNeighSize) {
+			MersenneTwisterFast random, int myNeighSize, int otherNeighSize, double value) {
 
 		if (otherPayoff > myPayoff) {
-			double probability = (otherPayoff - myPayoff) / (getValues()[0] * Math.max(otherNeighSize, myNeighSize));
+			double probability = (otherPayoff - myPayoff) / (value * Math.max(otherNeighSize, myNeighSize));
 			if (random.nextDouble(true, true) < probability) {
 				return otherStrategy;
 			}
@@ -63,9 +72,6 @@ public class Replicator extends Dynamic {
 		return myStrategy;
 	}
 
-	@Override
-	public DynamicType getDynamicType() {
-		return Replicator.TYPE;
-	}
+	
 
 }

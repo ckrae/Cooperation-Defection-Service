@@ -7,6 +7,7 @@ import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -44,8 +45,7 @@ public class SimulationSeries implements Serializable {
 	@PrimaryKeyJoinColumn
 	private Parameters parameters;
 
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@PrimaryKeyJoinColumn
+	@Embedded
 	private Evaluation evaluation;
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -62,7 +62,9 @@ public class SimulationSeries implements Serializable {
 
 		this.parameters = parameters;		
 		this.datasets = datasets;
-		this.evaluation = new Evaluation(this);
+		
+		double[] values = this.getLastCooperationValues();
+		this.evaluation = new Evaluation(values);
 
 	}
 	
@@ -117,6 +119,42 @@ public class SimulationSeries implements Serializable {
 			values[i] = datasets.get(i).getLastCooperationValue();
 		}
 		return values;
+	}
+
+	////////////// Print Data /////////////
+	
+	public String toTable() {
+		
+		List<DataSet> datasets = getDatasets();		
+		StringBuilder table = new StringBuilder();
+		
+		// headline
+		table.append("data").append("\t");
+		table.append(datasets.get(0).toHeadLine());
+		table.append("\n");
+		
+		//average
+		table.append("average").append("\t");
+		table.append("final#C").append("\t");
+		table.append(getEvaluation().toTableLine()).append("\t");
+		
+		table.append("\n");
+		//datasets
+		for(int i=0; i<datasets.size(); i++) {
+			
+			DataSet data = datasets.get(i);
+			table.append(i).append("\t");
+			table.append(data.toTableLine());
+			table.append("\n");			
+		}		
+		return table.toString();	
+	}
+	
+	public String toTableLine() {
+		
+		StringBuilder line = new StringBuilder();
+		
+		return line.toString();
 	}
 
 	

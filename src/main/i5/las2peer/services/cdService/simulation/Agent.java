@@ -18,19 +18,16 @@ public class Agent implements Steppable {
 
 	private static final long serialVersionUID = 1;
 
-	private int nodeId;
-	private int stepped;
+	private int nodeId;	
 
+	private double currentPayoff;
+	private boolean currentStrategy;
 	private List<Boolean> strategies;
 	private List<Double> payoff;
 	
-	private double currentPayoff;
-	private boolean currentStrategy;
-
-	public MersenneTwisterFast random;
 	private Network network;
-	private Game game;
 	private Dynamic dynamic;
+	private Bag neighbours;
 
 	public Agent(int nodeId) {
 		
@@ -46,9 +43,7 @@ public class Agent implements Steppable {
 	}
 
 	public void initialize(boolean strategy, Simulation simulation) {
-		
-		stepped = 0;
-		
+				
 		strategies = new ArrayList<Boolean>();
 		currentStrategy = strategy;
 		strategies.add(strategy);
@@ -56,19 +51,17 @@ public class Agent implements Steppable {
 		payoff = new ArrayList<Double>();
 		payoff.add(0.0);
 		
-		random = simulation.random;
 		network = simulation.getNetwork();
-		game = simulation.getGame();
 		dynamic = simulation.getDynamic();
-
+		
 	}
 
-	/////////////////// Steps ///////////////////////////
+	/////////////////// Step ///////////////////////////
 
 	@Override
 	public void step(SimState state) {
 		Simulation simulation = (Simulation) state;
-		currentPayoff = game.getPayoff(this);
+		currentPayoff = simulation.getGame().getPayoff(this);
 		payoff.add(currentPayoff);
 
 	}
@@ -80,16 +73,16 @@ public class Agent implements Steppable {
 
 	}
 
-	////////////////// Utility ///////////////////////////
+	////////////////// Network Utility ///////////////////////////
 
 	/**
 	 * Get a random neighbour agent
 	 * 
 	 * @return agent
 	 */
-	public Agent getRandomNeighbour() {
-
-		Bag agents = new Bag(getNeighbourhood());
+	public Agent getRandomNeighbour(MersenneTwisterFast random) {
+		
+		Bag agents = getNeighbourhood();
 		if (agents.size() > 0) {
 			return (Agent) agents.get(random.nextInt(agents.size()));
 		}
@@ -97,53 +90,57 @@ public class Agent implements Steppable {
 	}
 
 	public Bag getNeighbourhood() {
-
-		Bag nodes = new Bag(network.getAllNodes());
-		Bag edges = new Bag(network.getEdges(this, nodes));
+		
+		if(this.neighbours == null)
+			this.neighbours = calculateNeighbourhood(this.network);
+		
+		return this.neighbours;
+	}
+	
+	protected Bag calculateNeighbourhood(Network network) {	
+	
+		Bag edges = new Bag(network.getEdgesIn(this));		
 		Bag neighbours = new Bag();
-		for (int i = 0; i < edges.size(); i++) {
-			Edge edge = (Edge) (edges.get(i));
-			Agent from = (Agent) edge.getFrom();
-			Agent to = (Agent) edge.getTo();
-
-			if (!to.equals(this)) {
-				neighbours.add(to);
-			} else {
-				if (!from.equals(this))
-					neighbours.add(from);
-			}
-		}
-		return neighbours;
+		for (int i = 0, si = edges.size(); i < si; i++) {			
+			Edge edge = (Edge) edges.get(i);
+			Agent neighbour = (Agent) edge.getOtherNode(this);			
+			neighbours.add(neighbour);			
+		}		
+		return neighbours;		
 	}
 
 	//////////////////// Getter / Setter ///////////////
-
-	public boolean getStrategy(int round) {
-		return currentStrategy;
-	}
 	
 	public boolean getStrategy() {		
 		return currentStrategy;		
 	}
-
-	public double getPayoff(int round) {
-		return currentPayoff;
+	
+	public boolean getStrategy(int round) {
+		return currentStrategy;
 	}
 	
 	public double getPayoff() {
 		return currentPayoff;
 	}
 	
-	public boolean testMethod() {
-		return false;
+	public double getPayoff(int round) {
+		return currentPayoff;
 	}
 
 	public long getNodeId() {
 		return nodeId;
-	}
+	}	
 
 	public AgentData getAgentData() {
 		return new AgentData(strategies, payoff);
+	}
+	
+	protected void setNetwork(Network network) {
+		this.network = network;
+	}
+	
+	protected void setDynamic(Dynamic dynamic) {
+		this.dynamic = dynamic;
 	}
 
 }

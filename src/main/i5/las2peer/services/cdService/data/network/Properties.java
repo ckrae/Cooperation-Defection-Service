@@ -30,7 +30,7 @@ public class Properties {
 
 	@JsonProperty
 	public int getNodes() {
-		if (this.nodes == 0.0)
+		if (this.nodes == 0)
 			return -1;
 		return nodes;
 	}
@@ -43,14 +43,14 @@ public class Properties {
 	@JsonProperty
 	public double getDensity() {
 		if (this.density == 0.0)
-			calculateDensity();
+			this.density = calculateDensity(getNodes(), getEdges());
 		return density;
 	}
 
 	@JsonProperty
 	public double getAverageDegree() {
 		if (this.averageDegree == 0.0)
-			calculateAverageDegree();
+			calculateAverageDegree(getNodes(), getEdges());
 		return averageDegree;
 	}
 
@@ -106,17 +106,14 @@ public class Properties {
 	}
 
 	//////// Computations ///////
+	
 
-	public void calculateDensity() {
-		int n = this.getNodes();
-		int e = this.getEdges();
-		this.density = ((2 * e) / (n * (n - 1)));
+	public double calculateDensity(int n, int e) {
+		return 0.0;
 	}
 
-	public void calculateAverageDegree() {
-		int n = this.getNodes();
-		int e = this.getEdges();
-		this.averageDegree = ((2 * e) / (n));
+	public double calculateAverageDegree(int n, int e) {
+		return ((2.0 * e) / (n));
 	}
 
 }

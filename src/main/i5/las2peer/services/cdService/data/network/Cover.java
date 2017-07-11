@@ -15,8 +15,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-import i5.las2peer.services.cdService.data.ConsistencyException;
-
 @Entity
 public class Cover {
 

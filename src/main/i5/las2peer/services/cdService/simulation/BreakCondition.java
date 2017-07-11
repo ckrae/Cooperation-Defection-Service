@@ -17,6 +17,10 @@ public class BreakCondition implements Steppable {
 		this.stopper = stopper;
 	}
 	
+	public BreakCondition() {
+
+	}
+
 	public boolean isBreakCondition(Simulation simulation) {
 		
 		int round = simulation.getRound();
