@@ -6,10 +6,16 @@ import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Embeddable;
 
+import org.apache.commons.math3.stat.StatUtils;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import i5.las2peer.services.cdService.data.util.Table;
+import i5.las2peer.services.cdService.data.util.TableInterface;
+import i5.las2peer.services.cdService.data.util.TableRow;
+
 @Embeddable
-public class Evaluation implements Serializable {
+public class Evaluation implements Serializable, TableInterface {
 
 	private static final long serialVersionUID = 1L;
 
@@ -55,11 +61,8 @@ public class Evaluation implements Serializable {
 		if (values == null)
 			return 0.0;
 
-		double sum = 0.0;
-		for (double value : values) {
-			sum += value;
-		}
-		return (sum / values.length);
+		double average = StatUtils.mean(values);
+		return average;
 
 	}
 
@@ -68,17 +71,13 @@ public class Evaluation implements Serializable {
 		if (values == null)
 			return 0.0;
 
-		double sum = 0.0;
-		for (double value : values) {
-			sum += Math.pow((value - average), 2);
-		}
-		return (sum / values.length);
+		double variance = StatUtils.variance(values, average);
+		return variance;
 	}
 
 	private double calculateStandartDeviation(double varianz) {
 
 		return Math.sqrt(varianz);
-
 	}
 
 	//////////// Getter /////////////
@@ -100,23 +99,20 @@ public class Evaluation implements Serializable {
 
 	/////////// Print ///////////
 	
-	public String toTableLine() {		
+	@Override
+	public TableRow toTableLine() {		
 
-		StringBuilder line = new StringBuilder();		
-		line.append(getAverageValue()).append("\t");
-		line.append(getVariance()).append("\t");
-		line.append(getDeviation()).append("\t");
-		
-		return line.toString();		
-	}	
-	
-	public String toHeadLine(String prefix, String suffix) {
-			
-		StringBuilder line = new StringBuilder();		
-		line.append(prefix).append("average").append(suffix).append("\t");
-		line.append(prefix).append("variance").append(suffix).append("\t");
-		line.append(prefix).append("deviation").append(suffix).append("\t");
-		
-		return line.toString();		
+		TableRow line = new TableRow();		
+		line.add(getAverageValue()).add(getVariance()).add(getDeviation());		
+		return line;
 	}
+
+	public TableRow toHeadLine() {
+
+		TableRow line = new TableRow();
+		line.add("average").add("variance").add("deviation");
+		return line;
+
+	}
+
 }

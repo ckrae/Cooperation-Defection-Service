@@ -1,6 +1,5 @@
 package i5.las2peer.services.cdService.data;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Singleton;
@@ -10,15 +9,12 @@ import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
 import i5.las2peer.api.Context;
-import i5.las2peer.api.exceptions.RemoteServiceException;
-import i5.las2peer.api.exceptions.ServiceNotAvailableException;
-import i5.las2peer.api.exceptions.ServiceNotFoundException;
-import i5.las2peer.api.exceptions.StorageException;
 import i5.las2peer.services.cdService.data.network.Cover;
 import i5.las2peer.services.cdService.data.network.Graph;
-import i5.las2peer.services.cdService.data.network.NetworkAdapter;
 import i5.las2peer.services.cdService.data.simulation.Parameters;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
+import i5.las2peer.services.cdService.data.simulation.SimulationSeriesGroup;
+import i5.las2peer.services.cdService.data.util.TablePrinter;
 
 @Singleton
 public class EntityHandler {
@@ -127,6 +123,42 @@ public class EntityHandler {
 		List<SimulationSeries> seriesList = query.getResultList();
 		return seriesList;
 	}
+	
+	/////// Groups ///////
+	
+	public long storeSimulation(SimulationSeriesGroup group) {
+		
+		EntityManager em = factory.createEntityManager();
+		em.getTransaction().begin();
+		em.persist(group);
+		em.flush();
+		em.getTransaction().commit();
+
+		long id = group.getId();
+		em.close();
+
+		return id;
+	}	
+
+	protected SimulationSeriesGroup getSimulationSeriesGroup(long id) {
+
+		EntityManager em = factory.createEntityManager();
+		TypedQuery<SimulationSeriesGroup> query = em.createQuery("SELECT s FROM SimulationSeriesGroup AS s WHERE s.id =:id",
+				SimulationSeriesGroup.class);
+		query.setParameter("id", id);
+		SimulationSeriesGroup simulation = query.getSingleResult();
+		return simulation;
+	}
+	
+	protected List<SimulationSeriesGroup> getSimulationSeriesGroups() {
+
+		EntityManager em = factory.createEntityManager();
+
+		TypedQuery<SimulationSeriesGroup> query = em.createQuery("SELECT s FROM SimulationSeriesGroup s", SimulationSeriesGroup.class);
+		List<SimulationSeriesGroup> list = query.getResultList();
+		return list;
+	}
+	
 
 	//////////////// Network ///////////////////////
 
@@ -153,6 +185,7 @@ public class EntityHandler {
 
 		long networkId = network.getNetworkId();
 		em.close();
+		
 		return networkId;
 	}
 
@@ -171,7 +204,8 @@ public class EntityHandler {
 		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n", Graph.class);
 		List<Graph> networks = query.getResultList();
 		return networks;
-	}
+	}	
+
 
 	//////////////// Cover //////////////////
 
@@ -199,5 +233,7 @@ public class EntityHandler {
 		em.close();
 		return coverId;
 	}
+
+
 
 }

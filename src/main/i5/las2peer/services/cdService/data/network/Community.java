@@ -52,6 +52,7 @@ public class Community implements PropertyInterface {
 		return members;
 	}
 	
+	@Override
 	@JsonProperty
 	public Properties getProperties() {
 		return properties;
@@ -71,6 +72,7 @@ public class Community implements PropertyInterface {
 		this.members = members;
 	}
 
+	@Override
 	public void setProperties(Properties properties) {
 		this.properties = properties;
 	}

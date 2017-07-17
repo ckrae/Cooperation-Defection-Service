@@ -21,7 +21,6 @@ import i5.las2peer.api.exceptions.RemoteServiceException;
 import i5.las2peer.api.exceptions.ServiceInvocationException;
 import i5.las2peer.api.exceptions.ServiceNotAvailableException;
 import i5.las2peer.api.exceptions.ServiceNotFoundException;
-import i5.las2peer.api.exceptions.StorageException;
 import i5.las2peer.logging.L2pLogger;
 import i5.las2peer.logging.NodeObserver.Event;
 import i5.las2peer.restMapper.RESTService;
@@ -34,9 +33,11 @@ import i5.las2peer.services.cdService.data.mapping.CoverSimulationSeriesMapping;
 import i5.las2peer.services.cdService.data.network.Cover;
 import i5.las2peer.services.cdService.data.network.Graph;
 import i5.las2peer.services.cdService.data.network.NetworkAdapter;
-import i5.las2peer.services.cdService.data.simulation.SimulationMeta;
+import i5.las2peer.services.cdService.data.simulation.GroupParameters;
 import i5.las2peer.services.cdService.data.simulation.Parameters;
+import i5.las2peer.services.cdService.data.simulation.SimulationMeta;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
+import i5.las2peer.services.cdService.data.simulation.SimulationSeriesGroup;
 import i5.las2peer.services.cdService.simulation.SimulationManager;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
 import i5.las2peer.services.cdService.simulation.game.GameType;
@@ -48,6 +49,7 @@ import io.swagger.annotations.Contact;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
+import sim.field.network.Network;
 
 /**
  * Cooperation Defection Service
@@ -125,7 +127,7 @@ public class CDService extends RESTService {
 				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
 		public Response getSimulations(Parameters parameters) {
 
-			List<SimulationSeries> series = new ArrayList<SimulationSeries>();
+			List<SimulationSeries> series = new ArrayList<>();
 			try {
 				if (parameters == null) {
 					series = simulationDataProvider.getSimulationSeries();
@@ -156,7 +158,7 @@ public class CDService extends RESTService {
 				parameters = new Parameters();
 			}
 
-			List<SimulationMeta> seriesMeta = new ArrayList<SimulationMeta>();
+			List<SimulationMeta> seriesMeta = new ArrayList<>();
 			try {
 				seriesMeta = simulationDataProvider.getSimulationMeta(null);
 
@@ -244,7 +246,8 @@ public class CDService extends RESTService {
 		}
 
 		/**
-		 * Starts the simulation of a evolutionary cooperation and defection game
+		 * Starts the simulation of a evolutionary cooperation and defection
+		 * game
 		 * 
 		 * @param JSON
 		 * 
@@ -387,6 +390,97 @@ public class CDService extends RESTService {
 
 		}
 
+		///////////////////// Simulation Group ///////////////////////////////
+
+		/**
+		 * Starts a scaling simulation series group
+		 * 
+		 * @param JSON
+		 * 
+		 * @return HttpResponse with the returnString
+		 */
+		@POST
+		@Path("/simulation/series")
+		@Produces(MediaType.TEXT_PLAIN)
+		@Consumes(MediaType.APPLICATION_JSON)
+		@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "OK"),
+				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+		@ApiOperation(value = "POST SIMULATION", notes = " Starts the simulation of a evolutionary cooperation and defection game ")
+		public Response postSimulationGroup(GroupParameters parameters) {
+		try {
+			try {
+			if(!parameters.validate())
+				badRequest("invalid parameters");			
+			} catch (Exception e) {
+				e.printStackTrace();
+				return badRequest("failed parse json parameters");
+			}
+			
+			long graphId = parameters.getGraphId();
+			Network network = null;
+			try {
+				network = networkDataProvider.getNetwork(graphId).getGraph();
+			} catch (ServiceInvocationException e) {
+				e.printStackTrace();
+				return internal("OCD Invocation failed");
+			} catch (Exception e) {
+				e.printStackTrace();
+				return internal("failed get graph");
+			}
+			
+			SimulationSeriesGroup group = new SimulationSeriesGroup();			
+			try {
+				SimulationManager simulationManager = new SimulationManager();
+				group = simulationManager.simulate(parameters, network);
+			} catch (Exception e) {
+				logger.log(Level.WARNING, "Simulate Series Group", e);
+				e.printStackTrace();
+				return internal("failed to simulate");
+			}
+
+			long result;
+			try {
+				result = simulationDataProvider.storeSimulationGroup(group);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Response.serverError().entity("failed to store simulations").build();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.serverError().entity("internal error").build();
+		}
+
+			return success("simulation done ");
+
+		}
+
+		/**
+		 * Gets all the simulations performed by the user
+		 * 
+		 * @return HttpResponse with the returnString
+		 */
+		@GET
+		@Path("/simulation/series")
+		@Consumes(MediaType.APPLICATION_JSON)
+		@Produces(MediaType.APPLICATION_JSON)
+		@ApiOperation(value = "GET ALL SIMULATIONS", notes = "Gets all the simulations performed by the user")
+		@ApiResponses(value = {
+				@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "REPLACE THIS WITH YOUR OK MESSAGE"),
+				@ApiResponse(code = HttpURLConnection.HTTP_UNAUTHORIZED, message = "Unauthorized") })
+		public Response getSimulationSeriesGroup(GroupParameters parameters) {
+
+			List<SimulationSeriesGroup> simulations = new ArrayList<>();
+			try {
+				simulations = simulationDataProvider.getSimulationSeriesGroups();
+			} catch (Exception e) {
+				L2pLogger.logEvent(this, Event.SERVICE_ERROR, "fail to get simulation series. " + e.toString());
+				e.printStackTrace();
+				return internal("fail to get simulation series group");
+			}
+			return Response.ok().entity(simulations).build();
+
+		}
+
 		///////////////////// Network ///////////////////////////////
 		/**
 		 * Gets all networks reachable by this service
@@ -493,6 +587,22 @@ public class CDService extends RESTService {
 
 			return Response.ok().entity(mappings).build();
 		}
+		
+
+		/////// Response Utility ///////
+
+		public Response badRequest(String message) {
+			return Response.status(Status.BAD_REQUEST).entity(message).build();
+		}
+
+		public Response internal(String message) {
+			return Response.serverError().entity(message).build();
+		}
+		
+		public Response success(String message) {
+			return Response.ok().entity(message).build();
+		}
+
 	}
 
 }

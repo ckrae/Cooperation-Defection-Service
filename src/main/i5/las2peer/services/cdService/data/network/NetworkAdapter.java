@@ -73,8 +73,8 @@ public final class NetworkAdapter {
 			for (int j = 0, jSize = list.size(); j < jSize; j++) {
 				network.addEdge(i, j, true);
 			}
-		}
-
+		}		
+		
 		return network;
 	}
 
@@ -197,7 +197,7 @@ public final class NetworkAdapter {
 				edges.add((Edge) bag.get(j));
 			}
 		}
-		return (edges.size() / 2);
+		return (edges.size());
 	}
 
 	@SuppressWarnings("unchecked")

@@ -6,7 +6,7 @@ import java.util.List;
 import i5.las2peer.services.cdService.data.network.Community;
 import i5.las2peer.services.cdService.data.network.Cover;
 import i5.las2peer.services.cdService.data.simulation.AgentData;
-import i5.las2peer.services.cdService.data.simulation.DataSet;
+import i5.las2peer.services.cdService.data.simulation.SimulationDataset;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
 
 public class MappingFactory {
@@ -36,12 +36,12 @@ public class MappingFactory {
 			return null;
 
 		List<CommunityDataSetMapping> list = new ArrayList<CommunityDataSetMapping>();
-		List<DataSet> datasets = series.getDatasets();
+		List<SimulationDataset> simulationDatasets = series.getSimulationDatasets();
 		double cooperationValue = 0.0;
 
-		int size = datasets.size();
+		int size = simulationDatasets.size();
 		for (int i = 0; i < size; i++) {
-			CommunityDataSetMapping mapping = getCommunityDatasetMapping(community, datasets.get(i));
+			CommunityDataSetMapping mapping = getCommunitySimulationDatasetMapping(community, simulationDatasets.get(i));
 			list.add(mapping);
 			cooperationValue += mapping.getCooperationValue();
 		}
@@ -55,7 +55,7 @@ public class MappingFactory {
 		return mapping;
 	}
 
-	protected CommunityDataSetMapping getCommunityDatasetMapping(Community community, DataSet dataSet) {
+	protected CommunityDataSetMapping getCommunitySimulationDatasetMapping(Community community, SimulationDataset dataSet) {
 
 		if (community == null || dataSet == null)
 			return null;

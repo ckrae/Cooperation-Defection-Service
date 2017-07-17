@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
-import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -15,24 +14,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import i5.las2peer.services.cdService.data.network.Cover;
+import i5.las2peer.services.cdService.data.network.Graph;
+import i5.las2peer.services.cdService.data.network.PropertyType;
+import i5.las2peer.services.cdService.data.simulation.SimulationSeriesGroup;
 import i5.las2peer.services.cdService.data.util.Table;
 import i5.las2peer.services.cdService.data.util.TableInterface;
 import i5.las2peer.services.cdService.data.util.TableRow;
 
-@Entity
-public class CoverSimulationSeriesMapping extends MappingAbstract {
-
-	///// Entity Fields /////
+public class NetworkSimulationGroupMapping extends MappingAbstract {
+	
+///// Entity Fields /////
 
 	@Id
 	@GeneratedValue
 	private long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private Cover cover;
+	private Graph network;
 
-	@OneToMany(fetch = FetchType.LAZY)
-	private List<CommunitySimulationSeriesMapping> mappings;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private SimulationSeriesGroup simulation;
 
 	@ElementCollection
 	List<Double> cooperationValues;
@@ -42,20 +43,24 @@ public class CoverSimulationSeriesMapping extends MappingAbstract {
 
 	///// Constructor /////
 
-	public CoverSimulationSeriesMapping() {
+	public NetworkSimulationGroupMapping() {
 
 	}
 
 	///// Getter /////
-
-	@JsonProperty
-	public Cover getCover() {
-		return cover;
+	
+	public long getId() {
+		return this.id;
 	}
 
 	@JsonProperty
-	public List<CommunitySimulationSeriesMapping> getMappings() {
-		return mappings;
+	public Graph getNetwork() {
+		return network;
+	}
+
+	@JsonProperty
+	public SimulationSeriesGroup getSimulation() {
+		return simulation;
 	}
 
 	@JsonIgnore
@@ -72,12 +77,12 @@ public class CoverSimulationSeriesMapping extends MappingAbstract {
 
 	///// Setter /////
 
-	public void setCover(Cover cover) {
-		this.cover = cover;
+	public void setNetwork(Graph network) {
+		this.network = network;
 	}
 
-	public void setMappings(List<CommunitySimulationSeriesMapping> mappings) {
-		this.mappings = mappings;
+	public void setSimulation(SimulationSeriesGroup simulation) {
+		this.simulation = simulation;
 	}
 
 	public void setCooperationValues(List<Double> cooperationValues) {
@@ -85,7 +90,12 @@ public class CoverSimulationSeriesMapping extends MappingAbstract {
 	}
 
 	///// Methods /////
-
+	
+	@JsonIgnore
+	public double[] getPropertyValues(PropertyType property) {
+		
+		return null;
+	}
 	
 	
 	///// Print /////
@@ -104,12 +114,6 @@ public class CoverSimulationSeriesMapping extends MappingAbstract {
 		return null;
 	}
 
-	@Override
-	public String tableName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-
-
+	
 }

@@ -3,8 +3,6 @@ package i5.las2peer.services.cdService.data.network;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import sim.field.network.Network;

@@ -7,7 +7,6 @@ import java.util.List;
 import ec.util.MersenneTwisterFast;
 import i5.las2peer.services.cdService.data.simulation.AgentData;
 import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
-import i5.las2peer.services.cdService.simulation.game.Game;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.network.Edge;
@@ -25,7 +24,6 @@ public class Agent implements Steppable {
 	private List<Boolean> strategies;
 	private List<Double> payoff;
 	
-	private Network network;
 	private Dynamic dynamic;
 	private Bag neighbours;
 
@@ -44,14 +42,17 @@ public class Agent implements Steppable {
 
 	public void initialize(boolean strategy, Simulation simulation) {
 				
-		strategies = new ArrayList<Boolean>();
+		strategies.clear();
 		currentStrategy = strategy;
-		strategies.add(strategy);
-		currentPayoff = 0.0;
-		payoff = new ArrayList<Double>();
-		payoff.add(0.0);
+		strategies.add(0, currentStrategy);
 		
-		network = simulation.getNetwork();
+		payoff.clear();
+		currentPayoff = 0.0;		
+		payoff.add(0, currentPayoff);
+		
+		if(this.neighbours == null)
+			this.neighbours = calculateNeighbourhood(simulation.getNetwork());
+
 		dynamic = simulation.getDynamic();
 		
 	}
@@ -90,9 +91,6 @@ public class Agent implements Steppable {
 	}
 
 	public Bag getNeighbourhood() {
-		
-		if(this.neighbours == null)
-			this.neighbours = calculateNeighbourhood(this.network);
 		
 		return this.neighbours;
 	}
@@ -133,10 +131,6 @@ public class Agent implements Steppable {
 
 	public AgentData getAgentData() {
 		return new AgentData(strategies, payoff);
-	}
-	
-	protected void setNetwork(Network network) {
-		this.network = network;
 	}
 	
 	protected void setDynamic(Dynamic dynamic) {

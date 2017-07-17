@@ -5,6 +5,7 @@ import i5.las2peer.services.cdService.data.simulation.SimulationMeta;
 import i5.las2peer.services.cdService.data.simulation.Parameters;
 import i5.las2peer.services.cdService.data.simulation.SeriesGroup;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
+import i5.las2peer.services.cdService.data.simulation.SimulationSeriesGroup;
 
 public final class SimulationDataProvider {
 
@@ -54,5 +55,13 @@ public final class SimulationDataProvider {
 		SeriesGroup group = new SeriesGroup(getSimulationSeries(parameters));
 		return group.getSimulationMeta();
 
+	}
+
+	public long storeSimulationGroup(SimulationSeriesGroup group) {
+		return entityHandler.storeSimulation(group);
+	}
+	
+	public List<SimulationSeriesGroup> getSimulationSeriesGroups() {
+		return entityHandler .getSimulationSeriesGroups();
 	}
 }

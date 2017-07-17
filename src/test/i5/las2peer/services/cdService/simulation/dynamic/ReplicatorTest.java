@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -142,12 +143,12 @@ public class ReplicatorTest {
 		double value = 1.5;
 		
 		
-		Mockito.when(agent1.getPayoff(Mockito.anyInt())).thenReturn(myPayoff);
-		Mockito.when(agent2.getPayoff(Mockito.anyInt())).thenReturn(otherPayoff);		
-		Mockito.when(agent1.getStrategy(Mockito.anyInt())).thenReturn(myStrategy);
-		Mockito.when(agent2.getStrategy(Mockito.anyInt())).thenReturn(otherStrategy);		
-		Mockito.when(agent1.getRandomNeighbour(Mockito.any())).thenReturn(agent2);
-		Mockito.when(agent2.getRandomNeighbour(Mockito.any())).thenReturn(agent1);
+		Mockito.when(agent1.getPayoff(Matchers.anyInt())).thenReturn(myPayoff);
+		Mockito.when(agent2.getPayoff(Matchers.anyInt())).thenReturn(otherPayoff);		
+		Mockito.when(agent1.getStrategy(Matchers.anyInt())).thenReturn(myStrategy);
+		Mockito.when(agent2.getStrategy(Matchers.anyInt())).thenReturn(otherStrategy);		
+		Mockito.when(agent1.getRandomNeighbour(Matchers.any())).thenReturn(agent2);
+		Mockito.when(agent2.getRandomNeighbour(Matchers.any())).thenReturn(agent1);
 		
 		Bag bag = new Bag();
 		bag.add(1);
@@ -158,7 +159,7 @@ public class ReplicatorTest {
 		
 		boolean strategy = replicator.getNewStrategy(agent1, simulation);
 		
-		Mockito.verify(replicator).getNewStrategy(Mockito.eq(myStrategy), Mockito.eq(otherStrategy), Mockito.eq(myPayoff), Mockito.eq(otherPayoff), Mockito.isA(MersenneTwisterFast.class), Mockito.eq(myNeighSize), Mockito.eq(otherNeighSize), Mockito.eq(value));  
+		Mockito.verify(replicator).getNewStrategy(Matchers.eq(myStrategy), Matchers.eq(otherStrategy), Matchers.eq(myPayoff), Matchers.eq(otherPayoff), Matchers.isA(MersenneTwisterFast.class), Matchers.eq(myNeighSize), Matchers.eq(otherNeighSize), Matchers.eq(value));  
 		
 
 	}

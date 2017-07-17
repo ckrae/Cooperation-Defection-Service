@@ -31,8 +31,8 @@ public class SeriesGroupTest {
 		Mockito.when(series2.getSeriesId()).thenReturn((long) 2);
 		Mockito.when(series1.getParameters()).thenReturn(para1);
 		Mockito.when(series2.getParameters()).thenReturn(para2);
-		Mockito.when(series1.getEvaluation()).thenReturn(eval1);
-		Mockito.when(series2.getEvaluation()).thenReturn(eval2);
+		Mockito.when(series1.getCooperationEvaluation()).thenReturn(eval1);
+		Mockito.when(series2.getCooperationEvaluation()).thenReturn(eval2);
 		
 		ArrayList<SimulationSeries> seriesList = new ArrayList<SimulationSeries>();
 		seriesList.add(series1);

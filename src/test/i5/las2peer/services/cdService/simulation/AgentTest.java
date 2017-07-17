@@ -4,12 +4,12 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import ec.util.MersenneTwisterFast;
-import sim.field.network.Edge;
 import sim.field.network.Network;
 import sim.util.Bag;
 
@@ -32,7 +32,7 @@ public class AgentTest {
 		Bag agents = new Bag(3);	
 				
 		Mockito.when(agent.getNeighbourhood()).thenReturn(agents);
-		Mockito.when(agent.getRandomNeighbour(Mockito.any(MersenneTwisterFast.class))).thenCallRealMethod();
+		Mockito.when(agent.getRandomNeighbour(Matchers.any(MersenneTwisterFast.class))).thenCallRealMethod();
 		
 		// no neighbor
 		
@@ -45,15 +45,15 @@ public class AgentTest {
 		agents.add(agent2);
 		agents.add(agent3);	
 		
-		Mockito.when(random.nextInt(Mockito.anyInt())).thenReturn(0);
+		Mockito.when(random.nextInt(Matchers.anyInt())).thenReturn(0);
 		result = agent.getRandomNeighbour(random);
 		assertEquals(agent1, result);	
 		
-		Mockito.when(random.nextInt(Mockito.anyInt())).thenReturn(1);
+		Mockito.when(random.nextInt(Matchers.anyInt())).thenReturn(1);
 		result = agent.getRandomNeighbour(random);
 		assertEquals(agent2, result);
 		
-		Mockito.when(random.nextInt(Mockito.anyInt())).thenReturn(2);
+		Mockito.when(random.nextInt(Matchers.anyInt())).thenReturn(2);
 		result = agent.getRandomNeighbour(random);
 		assertEquals(agent3, result);
 	
@@ -71,7 +71,6 @@ public class AgentTest {
 		network.addNode(agent1);
 		network.addNode(agent2);
 		network.addNode(agent3);
-		agent.setNetwork(network);
 		
 		resultBag = agent.calculateNeighbourhood(network);
 		assertNotNull(resultBag);

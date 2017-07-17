@@ -27,33 +27,35 @@ public class CommunitySimulationSeriesMapping {
 
 	@OneToMany(fetch = FetchType.LAZY)
 	private List<CommunityDataSetMapping> mappings;
-	
+
 	@Basic
 	private double cooperationValue;
+
+	////// Constructor //////
 
 	public CommunitySimulationSeriesMapping() {
 
 	}
-	
+
 	////// Getter //////
-	
+
 	@JsonIgnore
 	public SimulationSeries getSeries() {
 		return series;
 	}
-	
+
 	@JsonProperty
 	public List<CommunityDataSetMapping> getMappings() {
 		return mappings;
 	}
-	
+
 	@JsonProperty
 	public double getCooperationValue() {
 		return cooperationValue;
 	}
-	
+
 	///// Setter /////
-	
+
 	public void setSeries(SimulationSeries series) {
 		this.series = series;
 	}
@@ -65,6 +67,5 @@ public class CommunitySimulationSeriesMapping {
 	public void setCooperationValue(double cooperationValue) {
 		this.cooperationValue = cooperationValue;
 	}
-
 
 }

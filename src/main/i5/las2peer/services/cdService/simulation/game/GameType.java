@@ -2,12 +2,22 @@ package i5.las2peer.services.cdService.simulation.game;
 
 public enum GameType {
 
-	PRISONERS_DILEMMA("Prisoner's dilemma"), CHICKEN("Chicken"), CUSTOM("Custom");
+	PRISONERS_DILEMMA("Prisoner's dilemma", "PD"), CHICKEN("Chicken", "SD"), CUSTOM("Custom", "CTM");
 	
 	public final String string;
+	public final String shortcut;
 	
-	GameType(String str) {
+	GameType(String str, String sht) {
 		this.string = str;
+		this.shortcut = sht;
+	}
+	
+	public String humanRead() {
+		return this.string;
+	}
+	
+	public String shortcut() {
+		return this.shortcut;
 	}
 	
 	public static GameType fromString(String string) {
@@ -33,4 +43,6 @@ public enum GameType {
 		}
 		return GameType.CUSTOM;
 	}
+	
+	
 }

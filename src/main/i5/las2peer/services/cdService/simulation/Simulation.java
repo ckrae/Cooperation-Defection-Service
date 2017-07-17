@@ -2,8 +2,9 @@
 package i5.las2peer.services.cdService.simulation;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import i5.las2peer.services.cdService.data.simulation.DataSet;
+import i5.las2peer.services.cdService.data.simulation.SimulationDataset;
 import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicFactory;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
@@ -42,7 +43,7 @@ public class Simulation extends SimState {
 	 */
 	private BreakCondition breakCondition;
 
-	//// Constructor
+	////// Constructor ///////
 
 	public Simulation() {
 		this(System.currentTimeMillis());
@@ -62,12 +63,12 @@ public class Simulation extends SimState {
 		super(seed);
 
 		Network netw = new Network(false);
-		
+
 		this.network = netw;
 		this.game = GameFactory.getInstance().build(2, 4);
 		this.dynamic = DynamicFactory.getInstance().build(DynamicType.REPLICATOR, 1.5);
 		this.recorder = new DataRecorder(this);
-		
+
 		ArrayList<Agent> agentList = new ArrayList<Agent>(20);
 		for (int i = 0; i < 20; i++) {
 			agentList.add(i, new Agent(i));
@@ -77,32 +78,38 @@ public class Simulation extends SimState {
 			netw.addEdge(agentList.get(random.nextInt(19)), agentList.get(random.nextInt(19)), 1);
 		}
 
-		
 	}
 
 	public static void main(String[] args) {
 		doLoop(Simulation.class, args);
 		System.exit(0);
 	}
-
+	
+	///////// Initialize /////////	
+	
 	/**
 	 * prepare for a new simulation run
 	 */
 	@Override
 	public void start() {
-
 		super.start();
-
-		// event schedule
-		ArrayList<Stoppable> stopper = new ArrayList<Stoppable>(4);
+		
+		recorder.clear();
+		List<Stoppable> stopper = new ArrayList<>(4);
 		stopper.add(schedule.scheduleRepeating(1, 3, recorder));
+		initAgents(stopper);
+
+		breakCondition = new BreakCondition(stopper);
+		breakCondition.add(schedule.scheduleRepeating(1, 4, breakCondition));
+	}
+
+	protected void initAgents(List<Stoppable> stopper) {
 
 		// Set random strategies 50/50
 		Bag agents = new Bag(network.getAllNodes());
 		int size = agents.size();
 
 		int cooperation = 0;
-
 		for (int i = 0; i < size; i++) {
 			boolean strategy;
 
@@ -123,8 +130,7 @@ public class Simulation extends SimState {
 			agent.initialize(strategy, this);
 			if (strategy)
 				cooperation++;
-			
-			System.out.println(agent);
+
 			stopper.add(schedule.scheduleRepeating(1, 2, agent));
 			stopper.add(schedule.scheduleRepeating(2, 1, new Steppable() {
 				@Override
@@ -134,9 +140,6 @@ public class Simulation extends SimState {
 			}));
 
 		}
-
-		breakCondition = new BreakCondition(stopper);
-		breakCondition.add(schedule.scheduleRepeating(1, 4, breakCondition));
 
 	}
 
@@ -215,10 +218,10 @@ public class Simulation extends SimState {
 		return (int) schedule.getSteps();
 	}
 
-	public DataSet getSimulationData() {
+	public SimulationDataset getSimulationData() {
 		return recorder.getSimulationData();
 	}
-	
+
 	public boolean hideSimulationData() {
 		return true;
 	}
@@ -235,11 +238,10 @@ public class Simulation extends SimState {
 	public Network getNetwork() {
 		return network;
 	}
-	
+
 	public boolean hideNetwork() {
 		return true;
 	}
-	
 
 	/**
 	 * @return the game
@@ -247,7 +249,7 @@ public class Simulation extends SimState {
 	public Game getGame() {
 		return game;
 	}
-	
+
 	public boolean hideGame() {
 		return true;
 	}
@@ -258,7 +260,7 @@ public class Simulation extends SimState {
 	public Dynamic getDynamic() {
 		return dynamic;
 	}
-	
+
 	public boolean hideDynamic() {
 		return true;
 	}

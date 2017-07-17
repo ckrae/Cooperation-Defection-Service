@@ -14,10 +14,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 import i5.las2peer.services.cdService.data.network.Community;
-import i5.las2peer.services.cdService.data.simulation.DataSet;
+import i5.las2peer.services.cdService.data.simulation.SimulationDataset;
+import i5.las2peer.services.cdService.data.util.Table;
+import i5.las2peer.services.cdService.data.util.TableInterface;
+import i5.las2peer.services.cdService.data.util.TableRow;
 
 @Entity
-public class CommunityDataSetMapping {
+public class CommunityDataSetMapping extends MappingAbstract {
 	
 	@Id
 	@GeneratedValue
@@ -33,7 +36,7 @@ public class CommunityDataSetMapping {
 	private Community community;
 
 	@ManyToOne
-	private DataSet dataSet;
+	private SimulationDataset dataSet;
 
 	@Basic
 	private double cooperationValue;
@@ -55,7 +58,7 @@ public class CommunityDataSetMapping {
 	}
 
 	@JsonIgnore
-	public DataSet getDataSet() {
+	public SimulationDataset getDataSet() {
 		return dataSet;
 	}
 
@@ -77,13 +80,33 @@ public class CommunityDataSetMapping {
 	}
 	
 	@JsonSetter
-	public void setDataSet(DataSet dataSet) {
+	public void setDataSet(SimulationDataset dataSet) {
 		this.dataSet = dataSet;
 	}
 	
 	@JsonSetter
 	public void setCooperationValue(double cooperationValue) {
 		this.cooperationValue = cooperationValue;
+	}
+
+	@Override
+	public TableRow toTableLine() {		
+
+		TableRow line = new TableRow();		
+		line.add("");		
+		return line;
+	}
+
+	@Override
+	public Table toTable() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String tableName() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
