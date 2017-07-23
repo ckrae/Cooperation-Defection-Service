@@ -1,6 +1,5 @@
 package i5.las2peer.services.cdService.data.simulation;
 
-import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.Basic;
@@ -12,10 +11,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.Transient;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import i5.las2peer.services.cdService.data.util.Table;
+import i5.las2peer.services.cdService.data.util.TableRow;
 
 /**
  * Simulation Data
@@ -25,11 +25,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  */
 @Entity
-public class DataSet implements Serializable {
+public class SimulationDataset extends SimulationAbstract {
 
 	/////////////// Entity Fields ///////////////
-
-	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue
@@ -50,11 +48,11 @@ public class DataSet implements Serializable {
 
 	/////////////// Constructor ///////////////
 
-	public DataSet() {
+	public SimulationDataset() {
 
 	}
 
-	public DataSet(List<Double> cooperationValues, List<Double> payoffValues, List<AgentData> agentDataList,
+	public SimulationDataset(List<Double> cooperationValues, List<Double> payoffValues, List<AgentData> agentDataList,
 			boolean stable) {
 
 		this.cooperationValues = cooperationValues;
@@ -81,8 +79,13 @@ public class DataSet implements Serializable {
 	}
 
 	@JsonProperty
-	public double getLastCooperationValue() {
+	public double getFinalCooperationValue() {
 		return cooperationValues.get(cooperationValues.size() - 1);
+	}
+
+	@JsonProperty
+	public double getFinalPayoffValue() {
+		return payoffValues.get(payoffValues.size() - 1);
 	}
 
 	@JsonProperty
@@ -99,40 +102,73 @@ public class DataSet implements Serializable {
 	public Evaluation getCooperationEvaluation() {
 		return new Evaluation(getCooperationValues());
 	}
-	
+
 	@JsonIgnore
 	public Evaluation getPayoffEvaluation() {
 		return new Evaluation(getPayoffValues());
 	}
 
+	//////////// Methods ////////////
+
+	public int size() {
+		return cooperationValues.size();
+	}
+
+	public int fill(int size) {
+		if (size > size()) {
+			double last = getFinalCooperationValue();
+			for (int i = size(); i < size; i++) {
+				cooperationValues.add(last);
+			}
+			last = getFinalPayoffValue();
+			for (int i = payoffValues.size(); i < size; i++) {
+				payoffValues.add(last);
+			}
+		}
+		return size;
+	}
+
 	////////////// Print Data /////////////
 
-	public String toTableLine() {
-		
+	@Override
+	public TableRow toTableLine() {
+
 		Evaluation coopEvaluation = getCooperationEvaluation();
 		Evaluation payoffEvaluation = getPayoffEvaluation();
-		
-		StringBuilder line = new StringBuilder();
-		line.append(getLastCooperationValue()).append("\t");
-		line.append(coopEvaluation.toTableLine()).append("\t");
-		line.append(payoffEvaluation.toTableLine()).append("\t");	
-		
-		return line.toString();
+
+		TableRow line = new TableRow();
+		line.add(getFinalCooperationValue());
+		line.add(coopEvaluation.toTableLine());
+		line.add(payoffEvaluation.toTableLine());
+
+		return line;
 	}
-	
-	public String toHeadLine() {
-		
+
+	public TableRow toHeadLine() {
+
 		Evaluation coopEvaluation = getCooperationEvaluation();
 		Evaluation payoffEvaluation = getPayoffEvaluation();
-	
-		StringBuilder line = new StringBuilder();
-		line.append("final#C").append("\t");
-		line.append(coopEvaluation.toHeadLine("", "#C"));
-		line.append(payoffEvaluation.toHeadLine("", "#P"));
-		
-		return line.toString();
-		
+
+		TableRow line = new TableRow();
+		line.add("final#C");
+		line.add(coopEvaluation.toHeadLine().suffix("#C"));
+		line.add(payoffEvaluation.toHeadLine().suffix("#P"));
+
+		return line;
 	}
+
+	@Override
+	public Table toTable() {		
+		
+		Table table = new Table();				
+		
+		List<Double> values = getCooperationValues();
+		for (int i = 0; i < values.size(); i++) {
+			double value = values.get(i);
+			table.add(new TableRow().add(value));
+		}
+		return table;
+	}
+
+
 }
-
-

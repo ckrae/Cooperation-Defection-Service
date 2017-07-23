@@ -7,16 +7,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import i5.las2peer.services.cdService.data.network.Community;
+import i5.las2peer.services.cdService.data.network.cover.Community;
 import i5.las2peer.services.cdService.data.simulation.AgentData;
-import i5.las2peer.services.cdService.data.simulation.DataSet;
+import i5.las2peer.services.cdService.data.simulation.SimulationDataset;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MappingFactoryTest {
@@ -36,11 +35,11 @@ public class MappingFactoryTest {
 	Community community3;
 
 	@Mock
-	DataSet dataset1;
+	SimulationDataset simulationDataset1;
 	@Mock
-	DataSet dataset2;
+	SimulationDataset simulationDataset2;
 	@Mock
-	DataSet dataset3;
+	SimulationDataset simulationDataset3;
 
 	List<Integer> memberList;
 	List<AgentData> agentDataList;
@@ -56,29 +55,29 @@ public class MappingFactoryTest {
 	@Before
 	public void mockSetUp() {
 
-		strategies1 = new ArrayList<Boolean>();
-		strategies2 = new ArrayList<Boolean>();
-		strategies3 = new ArrayList<Boolean>();
+		strategies1 = new ArrayList<>();
+		strategies2 = new ArrayList<>();
+		strategies3 = new ArrayList<>();
 
-		memberList = new ArrayList<Integer>();
-		agentDataList = new ArrayList<AgentData>();
+		memberList = new ArrayList<>();
+		agentDataList = new ArrayList<>();
 		agentDataList.add(agentData1);
 		agentDataList.add(agentData2);
 		agentDataList.add(agentData3);
 
-		coopValList1 = new ArrayList<Double>();
-		coopValList2 = new ArrayList<Double>();
-		coopValList3 = new ArrayList<Double>();
+		coopValList1 = new ArrayList<>();
+		coopValList2 = new ArrayList<>();
+		coopValList3 = new ArrayList<>();
 
 		Mockito.when(agentData1.getStrategies()).thenReturn(strategies1);
 		Mockito.when(agentData2.getStrategies()).thenReturn(strategies2);
 		Mockito.when(agentData3.getStrategies()).thenReturn(strategies3);
 
-		Mockito.when(dataset1.getAgentData()).thenReturn(agentDataList);
+		Mockito.when(simulationDataset1.getAgentData()).thenReturn(agentDataList);
 
-		Mockito.when(dataset1.getCooperationValues()).thenReturn(coopValList1);
-		Mockito.when(dataset2.getCooperationValues()).thenReturn(coopValList2);
-		Mockito.when(dataset3.getCooperationValues()).thenReturn(coopValList3);
+		Mockito.when(simulationDataset1.getCooperationValues()).thenReturn(coopValList1);
+		Mockito.when(simulationDataset2.getCooperationValues()).thenReturn(coopValList2);
+		Mockito.when(simulationDataset3.getCooperationValues()).thenReturn(coopValList3);
 
 		Mockito.when(community1.getMembers()).thenReturn(memberList);
 
@@ -101,7 +100,7 @@ public class MappingFactoryTest {
 		memberList.clear();
 		memberList.addAll(Arrays.asList(0, 1, 2));
 
-		mapping = factory.getCommunityDatasetMapping(community1, dataset1);
+		mapping = factory.getCommunitySimulationDatasetMapping(community1, simulationDataset1);
 		assertNotNull(mapping);
 		coopList = mapping.getCooperationValues();
 		assertNotNull(coopList);

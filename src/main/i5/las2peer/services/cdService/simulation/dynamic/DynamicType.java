@@ -6,14 +6,20 @@ package i5.las2peer.services.cdService.simulation.dynamic;
  */
 public enum DynamicType {
 
-	UNKNOWN(0, "Unknown"), REPLICATOR(1, "Replicator"), UNCONDITIONAL_IMITATION(2, "Imitation"), MORAN(3, "Moran"), WS_LS(4, "Win-Stay Lose-Shift");
+	UNKNOWN(0, "Unknown", "UK"), REPLICATOR(1, "Replicator", "REP"), UNCONDITIONAL_IMITATION(2, "Imitation", "IM"), MORAN(3, "Moran", "MOR"), WS_LS(4, "Win-Stay Lose-Shift", "WSLS");
 
 	public final String string;
+	public final String shortcut;
 	public final int number;
 
-	DynamicType(int num, String str) {
+	DynamicType(int num, String str, String sht) {
 		this.string = str;
 		this.number = num;
+		this.shortcut = sht;
+	}
+	
+	public String shortcut() {
+		return this.shortcut;
 	}
 
 	public static boolean TypeExists(String str) {

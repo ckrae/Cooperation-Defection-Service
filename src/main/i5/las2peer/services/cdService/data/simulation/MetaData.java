@@ -5,58 +5,57 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-
-public class SimulationMeta implements Serializable {
+public class MetaData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
-	long seriesId;	
 
-	private Parameters parameters;	
+	long seriesId;
 
+	private Parameters parameters;
 	private Evaluation evaluation;
-	
-	public SimulationMeta() {
-		
+
+	public MetaData() {
+
 	}
-	
-	public SimulationMeta(SimulationSeries series) {
-		
+
+	public MetaData(SimulationSeries series) {
+
 		this.seriesId = series.getSeriesId();
 		this.parameters = series.getParameters();
-		this.evaluation = series.getEvaluation();
+		this.evaluation = series.getCooperationEvaluation();
 	}
-	
+
+	////// Getter //////
+
 	@JsonProperty
 	public long getSeriesId() {
 		return seriesId;
-	}	
-	
-	@JsonSetter
-	public void setSeriesId(long seriesId) {
-		this.seriesId = seriesId;
 	}
-	
+
 	@JsonProperty
 	public Parameters getParameters() {
 		return parameters;
 	}
-	
-	@JsonSetter
-	public void setParameters(Parameters parameters) {
-		this.parameters = parameters;
-	}
-	
+
 	@JsonProperty
 	public Evaluation getEvaluation() {
 		return evaluation;
 	}
-	
+
+	////// Setter //////
+	@JsonSetter
+	public void setSeriesId(long seriesId) {
+		this.seriesId = seriesId;
+	}
+
+	@JsonSetter
+	public void setParameters(Parameters parameters) {
+		this.parameters = parameters;
+	}
+
 	@JsonSetter
 	public void setEvaluation(Evaluation evaluation) {
 		this.evaluation = evaluation;
 	}
-	
-	
 
 }

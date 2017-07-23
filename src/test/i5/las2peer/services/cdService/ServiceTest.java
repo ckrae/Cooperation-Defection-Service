@@ -22,7 +22,7 @@ import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.cdService.data.EntityHandler;
-import i5.las2peer.services.cdService.data.network.Graph;
+import i5.las2peer.services.cdService.data.network.NetworkMeta;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
@@ -52,7 +52,7 @@ public class ServiceTest {
 	
 	private static final String PERSISTENCE_UNIT_NAME = "SimulationTest";
 	private static final EntityManagerFactory factory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME);
-	private static final EntityHandler entityHandler = EntityHandler.getTestInstance();
+	private static final EntityHandler entityHandler = EntityHandler.getInstance();
 	
 	private long networkId;
 
@@ -101,7 +101,7 @@ public class ServiceTest {
 	@Before
 	public void storeTestNetwork() {		
 
-		Graph network = new Graph();
+		NetworkMeta network = new NetworkMeta();
 		network.setGraphName("TestGraph");		
 		EntityManager em = factory.createEntityManager();
 		em.getTransaction().begin();

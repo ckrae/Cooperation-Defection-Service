@@ -12,32 +12,56 @@ public class PropertiesTest {
 		Properties properties = new Properties();
 		int nodes;
 		int edges;
-		double density;
+		double density;		
 		
 		assertNotNull(properties);
 		
-		double value = properties.calculateDensity(4, 6);
-		assertEquals(0.5, value, 0.01);
+		density = properties.calculateDensity(5, 4);
+		assertEquals(0.4, density, 0.01);		
 		
+		density = properties.calculateDensity(1, 4);
+		assertEquals(0.0, density, 0.01);
 		
+		density = properties.calculateDensity(6, 10);
+		assertEquals(0.66, density, 0.01);	
 		
 		nodes = 5;
-		edges = 10;
+		edges = 4;
 		properties.setNodes(nodes);
 		properties.setEdges(edges);
 		assertEquals(5, properties.getNodes());
+		assertEquals(4, properties.getEdges());
 		density = properties.getDensity();
-		assertEquals(1.0, density, 0.01);
+		assertEquals(0.4, density, 0.01);		
+	}
+	
+	@Test
+	public void AverageDegreeTest() {
 		
-		nodes = 4;
-		edges = 2;
+		Properties properties = new Properties();
+		int nodes;
+		int edges;
+		double degree;		
+		
+		assertNotNull(properties);
+		
+		degree = properties.calculateAverageDegree(5, 4);
+		assertEquals(1.6, degree, 0.01);		
+		
+		degree = properties.calculateAverageDegree(1, 4);
+		assertEquals(8.0, degree, 0.01);
+		
+		degree = properties.calculateAverageDegree(6, 10);
+		assertEquals(3.33, degree, 0.01);	
+		
+		nodes = 5;
+		edges = 4;
 		properties.setNodes(nodes);
-		assertEquals(4, properties.getNodes());		
 		properties.setEdges(edges);
-		assertEquals(2, properties.getEdges());
-		density = properties.getDensity();
-		assertEquals(0.5, density, 0.01);
-		
+		assertEquals(5, properties.getNodes());
+		assertEquals(4, properties.getEdges());
+		degree = properties.getAverageDegree();
+		assertEquals(1.6, degree, 0.01);		
 	}
 	
 }

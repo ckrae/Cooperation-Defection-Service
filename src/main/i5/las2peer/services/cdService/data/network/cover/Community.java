@@ -1,7 +1,8 @@
-package i5.las2peer.services.cdService.data.network;
+package i5.las2peer.services.cdService.data.network.cover;
 
 import java.util.List;
 
+import javax.persistence.Basic;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -13,6 +14,9 @@ import javax.persistence.ManyToOne;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import i5.las2peer.services.cdService.data.network.Properties;
+import i5.las2peer.services.cdService.data.network.PropertyInterface;
+
 @Entity
 public class Community implements PropertyInterface {
 	
@@ -20,7 +24,10 @@ public class Community implements PropertyInterface {
 	
 	@Id
 	@GeneratedValue
-	private long communityId;
+	private long Id;
+	
+	@Basic
+	private int communityId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Cover cover;
@@ -37,8 +44,13 @@ public class Community implements PropertyInterface {
 	
 	///// Getter /////
 	
+	@JsonIgnore
+	public long getId() {
+		return Id;
+	}
+	
 	@JsonProperty
-	public long getCommunityId() {
+	public int getCommunityId() {
 		return communityId;
 	}
 	
@@ -52,6 +64,7 @@ public class Community implements PropertyInterface {
 		return members;
 	}
 	
+	@Override
 	@JsonProperty
 	public Properties getProperties() {
 		return properties;
@@ -59,7 +72,7 @@ public class Community implements PropertyInterface {
 	
 	///// Setter /////
 	
-	public void setCommunityId(long communityId) {
+	public void setCommunityId(int communityId) {
 		this.communityId = communityId;
 	}
 
@@ -71,6 +84,7 @@ public class Community implements PropertyInterface {
 		this.members = members;
 	}
 
+	@Override
 	public void setProperties(Properties properties) {
 		this.properties = properties;
 	}

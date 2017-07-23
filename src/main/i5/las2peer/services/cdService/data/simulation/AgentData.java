@@ -17,7 +17,7 @@ public class AgentData {
 	private long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private DataSet data;
+	private SimulationDataset data;
 
 	@ElementCollection
 	private List<Boolean> strategies;

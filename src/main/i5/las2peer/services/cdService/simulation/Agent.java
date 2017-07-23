@@ -7,7 +7,6 @@ import java.util.List;
 import ec.util.MersenneTwisterFast;
 import i5.las2peer.services.cdService.data.simulation.AgentData;
 import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
-import i5.las2peer.services.cdService.simulation.game.Game;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.field.network.Edge;
@@ -24,9 +23,7 @@ public class Agent implements Steppable {
 	private boolean currentStrategy;
 	private List<Boolean> strategies;
 	private List<Double> payoff;
-	
-	private Network network;
-	private Dynamic dynamic;
+
 	private Bag neighbours;
 
 	public Agent(int nodeId) {
@@ -39,21 +36,21 @@ public class Agent implements Steppable {
 	}
 	
 	public Agent() {
-		
+		this(0);
 	}
 
-	public void initialize(boolean strategy, Simulation simulation) {
+	public void initialize(boolean strategy, Network network) {
 				
-		strategies = new ArrayList<Boolean>();
+		strategies.clear();
 		currentStrategy = strategy;
-		strategies.add(strategy);
-		currentPayoff = 0.0;
-		payoff = new ArrayList<Double>();
-		payoff.add(0.0);
+		strategies.add(0, currentStrategy);
 		
-		network = simulation.getNetwork();
-		dynamic = simulation.getDynamic();
+		payoff.clear();
+		currentPayoff = 0.0;		
+		payoff.add(0, currentPayoff);
 		
+		if(this.neighbours == null)
+			this.neighbours = calculateNeighbourhood(network);		
 	}
 
 	/////////////////// Step ///////////////////////////
@@ -68,8 +65,8 @@ public class Agent implements Steppable {
 
 	public void updateDynamicStep(SimState state) {
 		Simulation simulation = (Simulation) state;
-		currentStrategy = dynamic.getNewStrategy(this, simulation);
-		strategies.add(dynamic.getNewStrategy(this, simulation));
+		currentStrategy = simulation.getDynamic().getNewStrategy(this, simulation);
+		strategies.add(simulation.getDynamic().getNewStrategy(this, simulation));
 
 	}
 
@@ -90,9 +87,6 @@ public class Agent implements Steppable {
 	}
 
 	public Bag getNeighbourhood() {
-		
-		if(this.neighbours == null)
-			this.neighbours = calculateNeighbourhood(this.network);
 		
 		return this.neighbours;
 	}
@@ -133,14 +127,6 @@ public class Agent implements Steppable {
 
 	public AgentData getAgentData() {
 		return new AgentData(strategies, payoff);
-	}
-	
-	protected void setNetwork(Network network) {
-		this.network = network;
-	}
-	
-	protected void setDynamic(Dynamic dynamic) {
-		this.dynamic = dynamic;
 	}
 
 }

@@ -1,47 +1,35 @@
 package i5.las2peer.services.cdService.data;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
 import i5.las2peer.api.Context;
-import i5.las2peer.api.exceptions.RemoteServiceException;
-import i5.las2peer.api.exceptions.ServiceNotAvailableException;
-import i5.las2peer.api.exceptions.ServiceNotFoundException;
-import i5.las2peer.api.exceptions.StorageException;
-import i5.las2peer.services.cdService.data.network.Cover;
-import i5.las2peer.services.cdService.data.network.Graph;
-import i5.las2peer.services.cdService.data.network.NetworkAdapter;
+import i5.las2peer.services.cdService.data.network.NetworkMeta;
+import i5.las2peer.services.cdService.data.network.cover.AlgorithmType;
+import i5.las2peer.services.cdService.data.network.cover.Cover;
 import i5.las2peer.services.cdService.data.simulation.Parameters;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
+import i5.las2peer.services.cdService.data.simulation.SimulationSeriesGroup;
 
-@Singleton
 public class EntityHandler {
 
 	private static EntityHandler databaseManager;
 	private EntityManagerFactory factory;
-	private static final String PERSISTENCE_UNIT_NAME = "Simulation";
 
-	private EntityHandler(String persistenceUnitName) {
+	private EntityHandler() {
 
-		factory = Persistence.createEntityManagerFactory(persistenceUnitName);
+		factory = PersistenceUtil.getEntityManagerFactory();
 	}
 
-	protected static synchronized EntityHandler getInstance() {
+	public static synchronized EntityHandler getInstance() {
 		if (databaseManager == null) {
-			databaseManager = new EntityHandler(PERSISTENCE_UNIT_NAME);
-		}
-		return databaseManager;
-	}
-
-	public static synchronized EntityHandler getTestInstance() {
-		if (databaseManager == null) {
-			databaseManager = new EntityHandler(PERSISTENCE_UNIT_NAME + "Test");
+			databaseManager = new EntityHandler();
 		}
 		return databaseManager;
 	}
@@ -58,7 +46,7 @@ public class EntityHandler {
 		return series;
 	}
 
-	protected long storeSimulationSeries(SimulationSeries series) {
+	protected synchronized long storeSimulationSeries(SimulationSeries series) {
 
 		EntityManager em = factory.createEntityManager();
 		em.getTransaction().begin();
@@ -103,7 +91,7 @@ public class EntityHandler {
 
 	}
 
-	public List<SimulationSeries> getSimulationSeries(Parameters parameters) {
+	protected List<SimulationSeries> getSimulationSeries(Parameters parameters) {
 
 		if (parameters == null)
 			return getSimulationSeries();
@@ -119,7 +107,7 @@ public class EntityHandler {
 		return seriesList;
 	}
 
-	public List<SimulationSeries> getSimulationSeries() {
+	protected List<SimulationSeries> getSimulationSeries() {
 
 		EntityManager em = factory.createEntityManager();
 
@@ -127,23 +115,63 @@ public class EntityHandler {
 		List<SimulationSeries> seriesList = query.getResultList();
 		return seriesList;
 	}
+	
+	/////// Groups ///////
+	
+	protected synchronized long storeSimulation(SimulationSeriesGroup group) {
+		
+		EntityManager em = factory.createEntityManager();
+		em.getTransaction().begin();
+		em.persist(group);
+		em.flush();
+		em.getTransaction().commit();
+
+		long id = group.getId();
+		em.close();
+
+		return id;
+	}	
+
+	protected SimulationSeriesGroup getSimulationSeriesGroup(long id) {
+
+		EntityManager em = factory.createEntityManager();
+		TypedQuery<SimulationSeriesGroup> query = em.createQuery("SELECT s FROM SimulationSeriesGroup AS s WHERE s.id =:id",
+				SimulationSeriesGroup.class);
+		query.setParameter("id", id);
+		SimulationSeriesGroup simulation = query.getSingleResult();
+		return simulation;
+	}
+	
+	protected List<SimulationSeriesGroup> getSimulationSeriesGroups() {
+
+		EntityManager em = factory.createEntityManager();
+
+		TypedQuery<SimulationSeriesGroup> query = em.createQuery("SELECT s FROM SimulationSeriesGroup s", SimulationSeriesGroup.class);
+		List<SimulationSeriesGroup> list = query.getResultList();
+		return list;
+	}
+	
 
 	//////////////// Network ///////////////////////
 
-	protected Graph getNetwork(long networkId) {
+	protected NetworkMeta getNetwork(long networkId) {
 
 		EntityManager em = factory.createEntityManager();
 		try {
-			TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.ocdId =:id", Graph.class);
+			TypedQuery<NetworkMeta> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.networkId =:id", NetworkMeta.class);
 			query.setParameter("id", networkId);
-			Graph network = query.getSingleResult();
+			NetworkMeta network = query.getSingleResult();
 			return network;
-		} catch (Exception e) {
+		} catch (NoResultException e) {
 			return null;
-		}
+		}	
+	    catch (Exception e) {
+	        e.printStackTrace();
+	        return null;
+	     }
 	}
 
-	protected long storeNetwork(Graph network) {
+	protected synchronized long storeNetwork(NetworkMeta network) {
 
 		EntityManager em = factory.createEntityManager();
 		em.getTransaction().begin();
@@ -153,25 +181,27 @@ public class EntityHandler {
 
 		long networkId = network.getNetworkId();
 		em.close();
+		
 		return networkId;
 	}
 
-	protected List<Graph> getNetworks(List<Long> networkIds) {
+	protected List<NetworkMeta> getNetworks(List<Long> networkIds) {
 
 		EntityManager em = factory.createEntityManager();
-		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.ocdId IN :ids", Graph.class);
+		TypedQuery<NetworkMeta> query = em.createQuery("SELECT n FROM Networks AS n WHERE n.ocdId IN :ids", NetworkMeta.class);
 		query.setParameter("ids", networkIds);
-		List<Graph> networks = query.getResultList();
+		List<NetworkMeta> networks = query.getResultList();
 		return networks;
 	}
 
-	protected List<Graph> getAllNetworks() {
+	protected List<NetworkMeta> getAllNetworks() {
 
 		EntityManager em = factory.createEntityManager();
-		TypedQuery<Graph> query = em.createQuery("SELECT n FROM Networks AS n", Graph.class);
-		List<Graph> networks = query.getResultList();
+		TypedQuery<NetworkMeta> query = em.createQuery("SELECT n FROM Networks AS n", NetworkMeta.class);
+		List<NetworkMeta> networks = query.getResultList();
 		return networks;
-	}
+	}	
+
 
 	//////////////// Cover //////////////////
 
@@ -179,16 +209,48 @@ public class EntityHandler {
 
 		EntityManager em = factory.createEntityManager();
 		try {
-			TypedQuery<Cover> query = em.createQuery("SELECT n FROM Cover AS n WHERE n.ocdId =:id", Cover.class);
+			TypedQuery<Cover> query = em.createQuery("SELECT n FROM Cover AS n WHERE n.coverId =:id", Cover.class);
 			query.setParameter("id", coverId);
 			Cover cover = query.getSingleResult();
 			return cover;
-		} catch (Exception e) {
+		} catch (NoResultException e) {
 			return null;
-		}
+		}	
+	    catch (Exception e) {
+	        e.printStackTrace();
+	        return null;
+	     }
+	}
+	
+	protected Cover getCover(NetworkMeta network, AlgorithmType algorithm) {
+		
+		EntityManager em = factory.createEntityManager();
+		try {
+			TypedQuery<Cover> query = em.createQuery("SELECT n FROM Cover AS n WHERE n.network =:netw AND n.algorithm =:algo", Cover.class);
+			query.setParameter("netw", network);
+			query.setParameter("algo", algorithm);
+			Cover cover = query.getSingleResult();
+			return cover;
+		} catch (NoResultException e) {
+			return null;
+		}	
+	    catch (Exception e) {
+	        e.printStackTrace();
+	        return null;
+	     }
+	}
+	
+	protected List<Cover> getCovers(NetworkMeta network) {
+		
+		EntityManager em = factory.createEntityManager();
+		TypedQuery<Cover> query = em.createQuery("SELECT n FROM Cover AS n WHERE n.network =:id", Cover.class);
+		query.setParameter("id", network);
+		List<Cover> covers = query.getResultList();
+		
+		return covers;
 	}
 
-	protected long storeCover(Cover cover) {
+	protected synchronized long storeCover(Cover cover) {
 
 		EntityManager em = factory.createEntityManager();
 		em.getTransaction().begin();
@@ -199,5 +261,8 @@ public class EntityHandler {
 		em.close();
 		return coverId;
 	}
+
+
+
 
 }

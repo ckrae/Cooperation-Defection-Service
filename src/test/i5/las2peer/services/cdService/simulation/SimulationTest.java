@@ -61,28 +61,28 @@ public class SimulationTest {
 		double coopValue;
 		Simulation simulation = new Simulation(1, network, game, dynamic);
 
-		Mockito.when(agent0.getStrategy(anyInt())).thenReturn(true);
-		Mockito.when(agent1.getStrategy(anyInt())).thenReturn(true);
-		Mockito.when(agent2.getStrategy(anyInt())).thenReturn(true);
-		Mockito.when(agent3.getStrategy(anyInt())).thenReturn(true);
+		Mockito.when(agent0.getStrategy()).thenReturn(true);
+		Mockito.when(agent1.getStrategy()).thenReturn(true);
+		Mockito.when(agent2.getStrategy()).thenReturn(true);
+		Mockito.when(agent3.getStrategy()).thenReturn(true);
 		coopNumber = simulation.getCooperationNumber();
 		assertEquals(4, coopNumber);
 		coopValue = simulation.getCooperationValue();
 		assertEquals(1.0, 1.0, coopValue);
 
-		Mockito.when(agent0.getStrategy(anyInt())).thenReturn(false);
-		Mockito.when(agent1.getStrategy(anyInt())).thenReturn(true);
-		Mockito.when(agent2.getStrategy(anyInt())).thenReturn(true);
-		Mockito.when(agent3.getStrategy(anyInt())).thenReturn(false);
+		Mockito.when(agent0.getStrategy()).thenReturn(false);
+		Mockito.when(agent1.getStrategy()).thenReturn(true);
+		Mockito.when(agent2.getStrategy()).thenReturn(true);
+		Mockito.when(agent3.getStrategy()).thenReturn(false);
 		coopNumber = simulation.getCooperationNumber();
 		assertEquals(2, coopNumber);
 		coopValue = simulation.getCooperationValue();
 		assertEquals(0.5, 0.5, coopValue);
 
-		Mockito.when(agent0.getStrategy(anyInt())).thenReturn(false);
-		Mockito.when(agent1.getStrategy(anyInt())).thenReturn(false);
-		Mockito.when(agent2.getStrategy(anyInt())).thenReturn(false);
-		Mockito.when(agent3.getStrategy(anyInt())).thenReturn(false);
+		Mockito.when(agent0.getStrategy()).thenReturn(false);
+		Mockito.when(agent1.getStrategy()).thenReturn(false);
+		Mockito.when(agent2.getStrategy()).thenReturn(false);
+		Mockito.when(agent3.getStrategy()).thenReturn(false);
 		coopNumber = simulation.getCooperationNumber();
 		assertEquals(0, coopNumber);
 		coopValue = simulation.getCooperationValue();

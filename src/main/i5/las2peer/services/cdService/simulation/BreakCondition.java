@@ -1,50 +1,66 @@
 package i5.las2peer.services.cdService.simulation;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
 
+/**
+ * BreakCondition
+ *
+ */
+
 public class BreakCondition implements Steppable {
 
 	private static final long serialVersionUID = 1L;
 
-	private ArrayList<Stoppable> stopper;
+	/**
+	 * This List holds everything thats in the schedule if the break condition
+	 * is fulfilled everything in the list is removed from the schedule
+	 *
+	 */
+	private List<Stoppable> stopper;
 
-	public BreakCondition(ArrayList<Stoppable> stopper) {
-
-		this.stopper = stopper;
-	}
-	
 	public BreakCondition() {
 
 	}
 
+	public BreakCondition(List<Stoppable> stopper) {
+		this.stopper = stopper;
+	}
+	
+	
+	/**
+	 * checks if the break condition is fulfilled
+	 * 
+	 * @param simulation
+	 * @return break condition fulfilled
+	 */
 	public boolean isBreakCondition(Simulation simulation) {
-		
+
 		int round = simulation.getRound();
 		if (round > 5) {
 
 			if (round >= simulation.getMaxIterations()) {
 				return true;
 			}
-			
+
 			DataRecorder recorder = simulation.getDataRecorder();
-			if (recorder.getCooperationValue(round-1) == recorder.getCooperationValue(round - 2)
+			if (recorder.getCooperationValue(round - 1) == recorder.getCooperationValue(round - 2)
 					&& recorder.getCooperationValue(round - 2) == recorder.getCooperationValue(round - 3)
 					&& recorder.getPayoffValue(round - 1) == recorder.getPayoffValue(round - 2)) {
 				return true;
 			}
 		}
 		return false;
-		
+
 	}
-	
+
 	@Override
 	public void step(SimState state) {
 		Simulation simulation = (Simulation) state;
-				
+
 		if (this.isBreakCondition(simulation)) {
 
 			for (int i = 0, size = stopper.size(); i < size; i++) {
@@ -52,6 +68,8 @@ public class BreakCondition implements Steppable {
 			}
 		}
 	}
+
+	
 	
 	public void add(Stoppable stoppable) {
 		stopper.add(stoppable);

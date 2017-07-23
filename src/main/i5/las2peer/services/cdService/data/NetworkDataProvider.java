@@ -11,45 +11,28 @@ import i5.las2peer.api.exceptions.ServiceNotAvailableException;
 import i5.las2peer.api.exceptions.ServiceNotFoundException;
 import i5.las2peer.api.exceptions.StorageException;
 import i5.las2peer.security.UserAgent;
-import i5.las2peer.services.cdService.data.network.Cover;
-import i5.las2peer.services.cdService.data.network.Graph;
-import i5.las2peer.services.cdService.data.network.NetworkAdapter;
+import i5.las2peer.services.cdService.data.network.NetworkMeta;
+import i5.las2peer.services.cdService.data.network.GraphAdapter;
 
 public class NetworkDataProvider {
-	
+
 	private EntityHandler entityHandler;
-	
+	private GraphAdapter graphAdapter;
+
 	public NetworkDataProvider() {
 		entityHandler = EntityHandler.getInstance();
+		graphAdapter = new GraphAdapter();
 	}
 
 	public static NetworkDataProvider getInstance() {
 		return new NetworkDataProvider();
 	}
 
-	public Graph getNetwork(long networkId) throws ServiceInvocationException {
+	public NetworkMeta getNetwork(long networkId) throws ServiceInvocationException {
 
-		// First try to get network from CDS Database
-		Graph network = null;
-		network = EntityHandler.getInstance().getNetwork(networkId);
-		if (network != null)
-			return network;
-
-		// Invoke from OCD Service
+		NetworkMeta network = null;
 		try {
-			network = NetworkAdapter.inovkeGraphMeta(networkId);
-		} catch (ServiceNotFoundException | ServiceNotAvailableException | RemoteServiceException e) {
-			e.printStackTrace();
-			throw e;
-		}
-		
-		// Store in CDS Database
-		try {
-		if(network != null) {
-			long id = ((UserAgent) Context.getCurrent().getMainAgent()).getId();
-			network.setUserId(id);
-			EntityHandler.getInstance().storeNetwork(network);
-		}
+			network = entityHandler.getNetwork(networkId);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -57,51 +40,66 @@ public class NetworkDataProvider {
 		return network;
 	}
 
-	public ArrayList<Graph> getNetworks(Set<Long> networkIds) throws StorageException, ServiceInvocationException {
+	public long storeNetwork(NetworkMeta network) {
 
-		ArrayList<Graph> networks = new ArrayList<Graph>(networkIds.size());
+		long networkId = -1;
+		try {
+			if (network != null) {
+				long id = ((UserAgent) Context.getCurrent().getMainAgent()).getId();
+				network.setUserId(id);
+				networkId = entityHandler.storeNetwork(network);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+		return networkId;
+	}
+
+	public ArrayList<NetworkMeta> getNetworks(Set<Long> networkIds)
+			throws StorageException, ServiceInvocationException {
+
+		ArrayList<NetworkMeta> networks = new ArrayList<NetworkMeta>(networkIds.size());
 		for (Long networkId : networkIds) {
 			networks.add(getNetwork(networkId));
 		}
 		return networks;
 	}
 
-	public Set<Long> getNetworkIds() {
-
-		return null;
+	public List<NetworkMeta> getNetworks(long userId) throws ServiceInvocationException {
+		
+		List<NetworkMeta> networks = entityHandler.getAllNetworks();	
+		return networks;
 	}
+	
 
-	public Cover getCover(Graph network, String algorithm)
-			throws StorageException, ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
+	////// External Networks /////
 
-		Cover cover = NetworkAdapter.inovkeCoverByAlgorithm(network.getNetworkId(), algorithm);
-		return cover;
-	}
+	public NetworkMeta getExternalNetwork(long ocdId) {
 
-	public Cover getCover(long graphId, long coverId)
-			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
-
-		return NetworkAdapter.inovkeCoverById(graphId, coverId);
-
-	}
-
-	public ArrayList<Cover> getCovers(ArrayList<Graph> networks, String algorithm) throws StorageException {
-
-		ArrayList<Cover> covers = new ArrayList<Cover>(networks.size());
-		for (Graph network : networks) {
-
+		NetworkMeta network = null;
+		try {
+			network = graphAdapter.inovkeGraphMeta(ocdId);
+		} catch (ServiceNotFoundException | ServiceNotAvailableException | RemoteServiceException e) {
+			e.printStackTrace();
 		}
-
-		return covers;
+		return network;
 	}
 
-	public List<Graph> getNetworks(long userId) throws ServiceInvocationException {
-		List<Long> ids = NetworkAdapter.invokeGraphIds();
-		List<Graph> networks = new ArrayList<Graph>(ids.size());
-		for(long id: ids) {
-			networks.add(getNetwork(id));
+	public List<NetworkMeta> getExternalNetworks(List<Long> ocdIds)
+			throws StorageException, ServiceInvocationException {
+
+		List<NetworkMeta> networks = new ArrayList<NetworkMeta>(ocdIds.size());
+		for (Long ocdId : ocdIds) {
+			networks.add(getExternalNetwork(ocdId));
 		}
 		return networks;
+	}
+
+	public List<NetworkMeta> getExternalNetworks(long userId) throws ServiceInvocationException, StorageException {
+
+		List<Long> ids = graphAdapter.invokeGraphIds();
+		return getExternalNetworks(ids);
 	}
 
 }

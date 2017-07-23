@@ -2,56 +2,62 @@
 <persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
 	version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+	
 	<persistence-unit name="Simulation" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		
 		<class>i5.las2peer.services.cdService.data.simulation.AgentData</class>
-		<class>i5.las2peer.services.cdService.data.simulation.DataSet</class>
 		<class>i5.las2peer.services.cdService.data.simulation.Evaluation</class>
-		<class>i5.las2peer.services.cdService.data.simulation.Parameters</class>		
+		<class>i5.las2peer.services.cdService.data.simulation.Parameters</class>
+		<class>i5.las2peer.services.cdService.data.simulation.SimulationDataset</class>
 		<class>i5.las2peer.services.cdService.data.simulation.SimulationSeries</class>
-		<class>i5.las2peer.services.cdService.data.simulation.SeriesGroup</class>
-		<class>i5.las2peer.services.cdService.data.network.Graph</class>
-		<class>i5.las2peer.services.cdService.data.network.Cover</class>
-		<class>i5.las2peer.services.cdService.data.network.Community</class>
-		<exclude-unlisted-classes>true</exclude-unlisted-classes>
+		<class>i5.las2peer.services.cdService.data.simulation.SimulationSeriesGroup</class>
+		
+		<class>i5.las2peer.services.cdService.data.network.DynamicGraph</class>
+		<class>i5.las2peer.services.cdService.data.network.NetworkMeta</class>
+		<class>i5.las2peer.services.cdService.data.network.NetworkStructure</class>
+		<class>i5.las2peer.services.cdService.data.network.NetworkStructureEdge</class>
+		<class>i5.las2peer.services.cdService.data.network.NetworkStructureNode</class>
+		<class>i5.las2peer.services.cdService.data.network.Properties</class>
+		
+		<class>i5.las2peer.services.cdService.data.network.cover.Community</class>
+		<class>i5.las2peer.services.cdService.data.network.cover.Cover</class>
+		
+		<class>i5.las2peer.services.cdService.data.mapping.Correlation</class>
+		<class>i5.las2peer.services.cdService.data.CoverSimulationSeriesMapping</class>
+		<class>i5.las2peer.services.cdService.data.CommunitySimulationSeriesMapping</class>
+		<class>i5.las2peer.services.cdService.data.CommunityDataSetMapping</class>
+		
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" />
-			<property name="javax.persistence.jdbc.url"
-				value="jdbc:hsqldb:file:db/db_simulation;shutdown=true;hsqldb.write_delay=false;" />
+			<property name="javax.persistence.jdbc.url"	value="jdbc:hsqldb:file:db/db_simulation;shutdown=true;" />
 			<property name="javax.persistence.jdbc.user" value="cdUser" />
 			<property name="javax.persistence.jdbc.password" value="cdPass" />
-			<property name="eclipselink.canonicalmodel.subpackage" value="prod"/>
-			<property name="eclipselink.ddl-generation" value="create-tables" />
-			<property name="eclipselink.ddl-generation.output-mode"
-				value="database" />
+			
+			<property name="eclipselink.ddl-generation" value="create-or-extend-tables" />
+			<property name="eclipselink.ddl-generation.output-mode" value="database" />
 				
 		</properties>
 	</persistence-unit>
 	
-	<persistence-unit name="SimulationTest"
-		transaction-type="RESOURCE_LOCAL">
-		<class>i5.las2peer.services.cdService.data.simulation.AgentData</class>
-		<class>i5.las2peer.services.cdService.data.simulation.DataSet</class>
-		<class>i5.las2peer.services.cdService.data.simulation.Evaluation</class>
-		<class>i5.las2peer.services.cdService.data.simulation.Parameters</class>	
-		<class>i5.las2peer.services.cdService.data.simulation.SimulationSeries</class>
-		<class>i5.las2peer.services.cdService.data.simulation.SeriesGroup</class>
-		<class>i5.las2peer.services.cdService.data.network.Graph</class>
-		<class>i5.las2peer.services.cdService.data.network.Cover</class>
-		<class>i5.las2peer.services.cdService.data.network.Community</class>
-		<exclude-unlisted-classes>true</exclude-unlisted-classes>
+	
+	<persistence-unit name="SimulationTest"	transaction-type="RESOURCE_LOCAL">
+		
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<jar-file>i5.las2peer.services.cdService-1.0.jar</jar-file>
+		
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" />
-			<property name="javax.persistence.jdbc.url"
-				value="jdbc:hsqldb:mem:db/db_simulationTest;shutdown=true;hsqldb.write_delay=false;" />
+			<property name="javax.persistence.jdbc.url"	value="jdbc:hsqldb:file:db/db_simulationTest;shutdown=true;" />
 			<property name="javax.persistence.jdbc.user" value="cdUser" />
 			<property name="javax.persistence.jdbc.password" value="cdPass" />
-	<property name="eclipselink.canonicalmodel.subpackage" value="dev"/>
-			<property name="eclipselink.ddl-generation" value="create-tables" />
+			
+			<property name="eclipselink.ddl-generation" value="create-or-extend-tables" />
 			<property name="eclipselink.ddl-generation.output-mode"
 				value="database" />
-			<property name="eclipselink.logging.level" value="INFO" />
+				
 		</properties>
-
+		
 	</persistence-unit>
 	
 </persistence>
