@@ -20,7 +20,7 @@ public class MetaData implements Serializable {
 
 	public MetaData(SimulationSeries series) {
 
-		this.seriesId = series.getSeriesId();
+		this.seriesId = series.getId();
 		this.parameters = series.getParameters();
 		this.evaluation = series.getCooperationEvaluation();
 	}

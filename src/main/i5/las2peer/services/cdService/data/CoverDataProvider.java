@@ -12,7 +12,6 @@ import i5.las2peer.services.cdService.data.network.cover.AlgorithmType;
 import i5.las2peer.services.cdService.data.network.cover.Cover;
 import i5.las2peer.services.cdService.data.network.cover.CoverAdapter;
 import i5.las2peer.services.cdService.data.network.cover.CoverOrigin;
-import i5.las2peer.services.cdService.data.network.GraphAdapter;
 
 public class CoverDataProvider {
 
@@ -25,6 +24,14 @@ public class CoverDataProvider {
 	}
 
 	///// Internal Cover //////
+	
+	public Cover getCover(long coverId) throws IllegalArgumentException {
+		
+		EntityHandler entityHandler = EntityHandler.getInstance();
+		Cover cover = entityHandler.getCover(coverId);
+		
+		return cover;
+	}
 	
 	public Cover getCover(NetworkMeta network, String algorithm) throws IllegalArgumentException {
 		

@@ -1,20 +1,52 @@
 package i5.las2peer.services.cdService.simulation.game;
 
+import java.io.Serializable;
+
 import i5.las2peer.services.cdService.simulation.Agent;
 import sim.util.Bag;
 
-public class Game {
+/**
+ * Provides the functions to determine the new payoff values for a agent.
+ *
+ */
+public class Game implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	/////////////// Attributes ///////////////
 
-	private final double payoffAA;
-	private final double payoffAB;
-	private final double payoffBA;
-	private final double payoffBB;
+	/**
+	 * the payoff a agent get if he plays strategy A against strategy A
+	 */
+	private double payoffAA;
+	/**
+	 * the payoff a agent get if he plays strategy A against strategy B
+	 */
+	private double payoffAB;
+	/**
+	 * the payoff a agent get if he plays strategy B against strategy A
+	 */
+	private double payoffBA;
+	/**
+	 * the payoff a agent get if he plays strategy B against strategy B
+	 */
+	private double payoffBB;
 
-	private final boolean StrategyA = true; // cooperate
-	private final boolean StrategyB = false; // defect
+	private final boolean STRATEGY_A = true; // cooperate
+	private final boolean STRATEGY_B = false; // defect
 
+	/////////////// Constructor ///////////////////
+
+	/**
+	 * Initialize the Game with default payoff parameters
+	 */
+	protected Game() {
+		this(1.0, 0.0, 1.0, 0.0);
+	}
+	
+	/**
+	 * Initialize with the specified payoff parameters
+	 */
 	protected Game(double aa, double ab, double ba, double bb) {
 
 		this.payoffAA = aa;
@@ -33,14 +65,14 @@ public class Game {
 	 * @return payoff
 	 */
 	public double getPayoff(Agent agent) {
-		
+
 		Bag neighbours = agent.getNeighbourhood();
 		double payoff = 0.0;
 		for (int i = 0, si = neighbours.size(); i < si; i++) {
 			Agent neighbour = (Agent) neighbours.get(i);
 			payoff += getPayoff(agent.getStrategy(), neighbour.getStrategy());
 		}
-		
+
 		return payoff;
 	}
 
@@ -51,30 +83,62 @@ public class Game {
 	 * @param otherStrategy
 	 * @return payoff
 	 */
-	protected double getPayoff(boolean myStrategy, boolean otherStrategy) {
+	public double getPayoff(boolean myStrategy, boolean otherStrategy) {
 
-		if (myStrategy == StrategyA) {
-			if (otherStrategy == StrategyA) {
+		if (myStrategy == STRATEGY_A) {
+			if (otherStrategy == STRATEGY_A) {
 				return payoffAA;
 			} else {
 				return payoffAB;
 			}
 		}
-		if (otherStrategy == StrategyA) {
+		if (otherStrategy == STRATEGY_A) {
 			return payoffBA;
 		}
 		return payoffBB;
 	}
 
-	/**
-	 * Get the Payoff Scheme as Double Array 
-	 * 
-	 * @return double array
-	 */
-	public double[] getPayoffScheme() {
+	///// Getter /////
 
-		double[] result = { payoffAA, payoffAB, payoffBA, payoffBB };
-		return result;
+	/**
+	 * @return GameType of this game
+	 */
+	public GameType getGameType() {
+		return GameType.getGameType(payoffAA, payoffAB, payoffBA, payoffBB);
+	}
+
+	public double getPayoffAA() {
+		return payoffAA;
+	}
+
+	public double getPayoffAB() {
+		return payoffAB;
+	}
+
+	public double getPayoffBA() {
+		return payoffBA;
+	}
+
+	public double getPayoffBB() {
+		return payoffBB;
+	}
+
+	///// Setter /////
+
+	public void setPayoffAA(double payoffAA) {
+		this.payoffAA = payoffAA;
+	}
+
+	public void setPayoffAB(double payoffAB) {
+		this.payoffAB = payoffAB;
+	}
+
+	public void setPayoffBA(double payoffBA) {
+		this.payoffBA = payoffBA;
+	}
+
+	public void setPayoffBB(double payoffBB) {
+		this.payoffBB = payoffBB;
 	}
 
 }

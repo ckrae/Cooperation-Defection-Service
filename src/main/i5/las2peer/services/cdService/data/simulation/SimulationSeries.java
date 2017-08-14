@@ -1,11 +1,9 @@
 package i5.las2peer.services.cdService.data.simulation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,29 +13,37 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
-import i5.las2peer.services.cdService.data.util.Table;
-import i5.las2peer.services.cdService.data.util.TableRow;
+import i5.las2peer.services.cdService.data.network.cover.Community;
+import i5.las2peer.services.cdService.data.util.table.Table;
+import i5.las2peer.services.cdService.data.util.table.TableRow;
 
 /**
- * SimulationSeries
+ * A SimulationSeries serves as a container for multiple SimulationDatasets.
+ * 
+ * If you repeat the same Simulation multiple times, you will get multiple
+ * SimulationDatasets with the same parameters. This class is meant to group them
+ * together and allow statistical evaluation of the data sets.
  *
  */
 
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SimulationSeries extends SimulationAbstract {
 
 	/////////////// Entity Fields ///////////////
 
+	/**
+	 * The primary key for database persistence
+	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column
 	private long seriesId;
 
 	@Basic
@@ -49,13 +55,23 @@ public class SimulationSeries extends SimulationAbstract {
 	@Basic
 	private int generations;
 
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@PrimaryKeyJoinColumn
+	/**
+	 * The simulation parameters used for this simulation series
+	 */
+	@Embedded
 	private Parameters parameters;
 
+	/**
+	 * Statistical evaluation of the cooperation values of the
+	 * SimulationDatasets
+	 */
 	@Embedded
 	private Evaluation cooperationEvaluation;
-
+	
+	/**
+	 * Statistical evaluation of the payoff values of the
+	 * SimulationDatasets
+	 */
 	@Transient
 	private Evaluation payoffEvaluation;
 
@@ -80,11 +96,6 @@ public class SimulationSeries extends SimulationAbstract {
 
 	////////////////// Getter /////////////////////
 
-	@JsonProperty
-	public long getSeriesId() {
-		return seriesId;
-	}
-
 	@JsonIgnore
 	@Override
 	public long getId() {
@@ -94,13 +105,6 @@ public class SimulationSeries extends SimulationAbstract {
 	@JsonIgnore
 	public long getUserId() {
 		return userId;
-	}
-
-	@JsonProperty
-	public String getName() {
-		if (name == null)
-			return String.valueOf(getId());
-		return name;
 	}
 
 	@JsonIgnore
@@ -120,15 +124,11 @@ public class SimulationSeries extends SimulationAbstract {
 
 	@JsonProperty
 	public Evaluation getCooperationEvaluation() {
-		if (cooperationEvaluation == null)
-			cooperationEvaluation = new Evaluation(getFinalCooperationValues());
 		return cooperationEvaluation;
 	}
 
 	@JsonProperty
 	public Evaluation getPayoffEvaluation() {
-		if (payoffEvaluation == null)
-			payoffEvaluation = new Evaluation(getFinalPayoffValues());
 		return payoffEvaluation;
 	}
 
@@ -144,32 +144,76 @@ public class SimulationSeries extends SimulationAbstract {
 
 	////////////////// Setter /////////////////////
 
-	public void setSeriesId(long seriesId) {
+	@JsonSetter
+	public void setId(long seriesId) {
 		this.seriesId = seriesId;
 	}
 
+	@JsonSetter
 	public void setUserId(long userId) {
 		this.userId = userId;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	@JsonSetter
+	public void setGenerations(int generations) {
+		this.generations = generations;
+	}
+
+	@JsonSetter
+	public void setParameters(Parameters parameters) {
+		this.parameters = parameters;
+	}
+
+	@JsonSetter
+	public void setCooperationEvaluation(Evaluation cooperationEvaluation) {
+		this.cooperationEvaluation = cooperationEvaluation;
+	}
+
+	@JsonSetter
+	public void setPayoffEvaluation(Evaluation payoffEvaluation) {
+		this.payoffEvaluation = payoffEvaluation;
+	}
+
+	@JsonSetter
+	public void setSimulationDatasets(List<SimulationDataset> simulationDatasets) {
+		this.simulationDatasets = simulationDatasets;
 	}
 
 	/////////////////// Methods ///////////////////////
 
+	/**
+	 * Create {@link Evaluation} objects with the values given by
+	 * {@link #getFinalCooperationValues()} and {@link #getFinalPayoffValues()}.
+	 * 
+	 */
+	public void evaluate() {
+		cooperationEvaluation = new Evaluation(getFinalCooperationValues());
+		payoffEvaluation = new Evaluation(getFinalPayoffValues());
+	}
+
+	/**
+	 * @return the number of SimulationDatasets
+	 */
 	public int size() {
+		if (simulationDatasets == null)
+			return 0;
 		return simulationDatasets.size();
 	}
 
+	/**
+	 * @return the number of generations of the longest SimulationDataset
+	 */
 	public int generations() {
 
-			int maxSize = 0;
-			for (SimulationDataset dataset : simulationDatasets) {
-				if (dataset.getCooperationValues().size() > maxSize)
-					maxSize = dataset.getCooperationValues().size();
-			}			
-			return maxSize;	
+		if (getSimulationDatasets() == null)
+			return 0;
+
+		int maxSize = 0;
+		for (SimulationDataset dataset : simulationDatasets) {
+			if (dataset.generations() > maxSize)
+				maxSize = dataset.generations();
+		}
+		return maxSize;
 	}
 
 	public void normalize() {
@@ -178,9 +222,73 @@ public class SimulationSeries extends SimulationAbstract {
 			dataset.fill(maxSize);
 		}
 	}
+	
+	public double averageCooperationValue() {
+		if(getCooperationEvaluation() == null)
+			setCooperationEvaluation(new Evaluation(getFinalCooperationValues()));
+		return getCooperationEvaluation().getAverageValue();
+	}
+	
+	public double averagePayoffValue() {
+		if(getPayoffEvaluation() == null)
+			setPayoffEvaluation(new Evaluation(getFinalPayoffValues()));
+		return getPayoffEvaluation().getAverageValue();
+	}
+
+	/**
+	 * Return the average community cooperation values of all SimulationDatasets
+	 * *
+	 * 
+	 * @param communityList
+	 *            the list of communities
+	 * @return the values
+	 */
+	public double[] getAverageCommunityCooperationValues(List<Community> communityList) {
+		int datasetCount = size();
+
+		if (datasetCount < 1)
+			throw new IllegalStateException("this simulation series is empty");
+
+		int communityCount = communityList.size();
+		double[] averageValues = new double[communityCount];
+
+		for (int communityId = 0; communityId < communityCount; communityId++) {
+			averageValues[communityId] = getAverageCommunityCooperationValue(communityList.get(communityId));
+		}
+		return averageValues;
+	}
+
+	/**
+	 * Returns the average community cooperation value of the SimulationDatasets
+	 * *
+	 * 
+	 * @param list
+	 *            the Community
+	 * @return average cooperation value
+	 */
+	public double getAverageCommunityCooperationValue(Community community) {
+		int datasetCount = size();
+
+		if (datasetCount < 1)
+			throw new IllegalStateException("this simulation series is empty");
+
+		if (community.getMembers() == null)
+			throw new IllegalArgumentException("community has no memberlist");
+
+		double total = 0.0;
+		for (int datasetId = 0; datasetId < datasetCount; datasetId++) {
+			total += getSimulationDatasets().get(datasetId).getCommunityCooperationValue(community.getMembers());
+		}
+
+		return total / datasetCount;
+	}
 
 	///// Final
 
+	/**
+	 * @return array of the cooperations values of the final state of all
+	 *         SimulationDatasets
+	 */
 	@JsonIgnore
 	public double[] getFinalCooperationValues() {
 
@@ -192,6 +300,10 @@ public class SimulationSeries extends SimulationAbstract {
 		return values;
 	}
 
+	/**
+	 * @return array of the payoff values of the final state of all
+	 *         SimulationDatasets
+	 */
 	@JsonIgnore
 	public double[] getFinalPayoffValues() {
 
@@ -206,29 +318,33 @@ public class SimulationSeries extends SimulationAbstract {
 	///// over time
 
 	@JsonIgnore
-	public List<Double> getCooperationValues() {
+	public double[] getAverageCooperationValuesOverTime() {
 
 		int size = generations();
-		List<Double> list = new ArrayList<>(size);
+		double[] values = new double[size];
 		for (int i = 0; i < size; i++) {
+			double total = 0;
 			for (SimulationDataset dataset : simulationDatasets) {
-				list.add(dataset.getCooperationValues().get(i));
+				total += dataset.getCooperationValues().get(i);
 			}
+			values[i] = total / getSimulationDatasets().size();
 		}
-		return list;
+		return values;
 	}
 
 	@JsonIgnore
-	public List<Double> getPayoffValues() {
+	public double[] getAveragePayoffValuesOverTime() {
 
 		int size = generations();
-		List<Double> list = new ArrayList<>(size);
+		double[] values = new double[size];
 		for (int i = 0; i < size; i++) {
+			double total = 0;
 			for (SimulationDataset dataset : simulationDatasets) {
-				list.add(dataset.getPayoffValues().get(i));
+				total += dataset.getPayoffValues().get(i);
 			}
+			values[i] = total / getSimulationDatasets().size();
 		}
-		return list;
+		return values;
 	}
 
 	////////////// Print Data /////////////
@@ -243,18 +359,18 @@ public class SimulationSeries extends SimulationAbstract {
 		TableRow headline = new TableRow();
 		headline.add("data").add(simulationDatasets.get(0).toHeadLine());
 		table.add(headline);
-		
+
 		// datasets
 		for (int i = 0; i < simulationDatasets.size(); i++) {
 			SimulationDataset data = simulationDatasets.get(i);
-			table.add(data.toTableLine().addFront(i+1));
+			table.add(data.toTableLine().addFront(i + 1));
 		}
 		return table;
 	}
 
 	@Override
 	public TableRow toTableLine() {
-		
+
 		Parameters parameters = getParameters();
 		Evaluation coopEvaluation = getCooperationEvaluation();
 		Evaluation payoffEvaluation = getPayoffEvaluation();
@@ -271,7 +387,7 @@ public class SimulationSeries extends SimulationAbstract {
 		Parameters parameters = getParameters();
 		Evaluation coopEvaluation = getCooperationEvaluation();
 		Evaluation payoffEvaluation = getPayoffEvaluation();
-		
+
 		TableRow line = new TableRow();
 		line.add(parameters.toHeadLine());
 		line.add(coopEvaluation.toHeadLine().suffix("#C"));
@@ -280,7 +396,5 @@ public class SimulationSeries extends SimulationAbstract {
 		return line;
 
 	}
-
-
 
 }

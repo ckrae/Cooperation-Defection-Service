@@ -14,20 +14,34 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import i5.las2peer.services.cdService.data.util.Table;
-import i5.las2peer.services.cdService.data.util.TableRow;
+import i5.las2peer.services.cdService.data.network.cover.Community;
+import i5.las2peer.services.cdService.data.util.table.Table;
+import i5.las2peer.services.cdService.data.util.table.TableRow;
+
+/**
+ * A SimulationSeriesGroup serves as a container for multiple SimulationSeries.
+ *
+ * Sometimes you want to do multiple simulations with a scaling parameter. This class
+ * is meant to group the resulting SimulatonSeries together.
+ */
 
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SimulationSeriesGroup extends SimulationAbstract {
 
 	////////// Entity Fields //////////
 
+	
+	/**
+	 * the persistence id
+	 */
 	@Id
 	@GeneratedValue
 	private long groupId;
-	
+
 	@Basic
 	private String name;
 
@@ -51,13 +65,14 @@ public class SimulationSeriesGroup extends SimulationAbstract {
 	}
 
 	////////// Getter //////////
-	
+
 	@JsonProperty
 	@Override
 	public long getId() {
 		return this.groupId;
 	}
-	
+
+	@Override
 	@JsonProperty
 	public String getName() {
 		return this.name;
@@ -71,17 +86,24 @@ public class SimulationSeriesGroup extends SimulationAbstract {
 	@JsonProperty
 	public Evaluation getCooperationEvaluation() {
 		if (cooperationEvaluation == null)
-			cooperationEvaluation = new Evaluation(getFinalCooperationValues());
+			cooperationEvaluation = new Evaluation(getAverageFinalCooperationValues());
 		return cooperationEvaluation;
 	}
 
 	@JsonProperty
 	public Evaluation getPayoffEvaluation() {
 		if (payoffEvaluation == null)
-			payoffEvaluation = new Evaluation(getFinalPayoffValues());
+			payoffEvaluation = new Evaluation(getAverageFinalPayoffValues());
 		return payoffEvaluation;
 	}
-
+	
+	public List<SimulationSeries> getSeriesList() {
+		return seriesList;
+	}
+	
+	/**
+	 * @return the network ids used in the simulation series
+	 */
 	@JsonIgnore
 	public List<Long> getNetworkIds() {
 
@@ -92,6 +114,12 @@ public class SimulationSeriesGroup extends SimulationAbstract {
 		return networkIds;
 	}
 
+	
+	/**
+	 * Creates the metaData object of this SimulationSeriesGroup. The metaData object is used to be sent to the web client.
+	 * 
+	 * @return MetaData
+	 */
 	@JsonIgnore
 	public List<MetaData> getMetaData() {
 		int size = seriesList.size();
@@ -101,89 +129,123 @@ public class SimulationSeriesGroup extends SimulationAbstract {
 		}
 		return metaList;
 	}
-	
+
 	/////////// Setter ////////////
-	
+
+	/**
+	 * Adds a SimulationSeries to this group
+	 * 
+	 * @param series SimulationSeries
+	 */
 	public void add(SimulationSeries series) {
 		this.seriesList.add(series);
 	}
-	
-	public void setName(String name) {
-		this.name = name;
+
+	public void setSeriesList(List<SimulationSeries> seriesList) {
+		this.seriesList = seriesList;
+	}
+
+	public void setCooperationEvaluation(Evaluation cooperationEvaluation) {
+		this.cooperationEvaluation = cooperationEvaluation;
+	}
+
+	public void setPayoffEvaluation(Evaluation payoffEvaluation) {
+		this.payoffEvaluation = payoffEvaluation;
 	}
 
 	/////////////////// Methods ///////////////////////
 
+	/**
+	 * @return the number of contained SimulationSeries 
+	 */
 	public int size() {
 		return seriesList.size();
 	}
-	
+
 	public int generations() {
 		int maxSize = 0;
 		for (SimulationSeries simulation : seriesList) {
-			if (simulation.generations() > maxSize)				
+			if (simulation.generations() > maxSize)
 				maxSize = simulation.generations();
-		}		
+		}
 		return maxSize;
+	}
+
+	/**
+	 * Return the average community cooperation values of all SimulationSeries
+	 * 
+	 * @param communityList
+	 *            the list of communities
+	 * @return the values
+	 */
+	public double[] getAverageCommunityCooperationValues(List<Community> communityList) {
+		int datasetCount = size();
+
+		if (datasetCount < 1)
+			throw new IllegalStateException("this simulation series group is empty");
+
+		int communityCount = communityList.size();
+		double[] averageValues = new double[communityCount];
+
+		for (int communityId = 0; communityId < communityCount; communityId++) {
+			averageValues[communityId] = getAverageCommunityCooperationValue(communityList.get(communityId));
+		}
+		return averageValues;
+	}
+
+	/**
+	 * Returns the average community cooperation value of all SimulationSeries
+	 * 
+	 * @param community
+	 *            the Community
+	 * @return average cooperation value
+	 */
+	public double getAverageCommunityCooperationValue(Community community) {
+		int datasetCount = size();
+
+		if (datasetCount < 1)
+			throw new IllegalStateException("this simulation series group is empty");
+
+		if (community.getMembers() == null)
+			throw new IllegalArgumentException("community has no memberlist");
+
+		double total = 0.0;
+		for (int datasetId = 0; datasetId < datasetCount; datasetId++) {
+			total += getSimulationSeries().get(datasetId).getAverageCommunityCooperationValue(community);
+		}
+
+		return total / datasetCount;
 	}
 
 	///// final
 
 	@JsonIgnore
-	public double[] getFinalCooperationValues() {
+	public double[] getAverageFinalCooperationValues() {
 
 		int size = seriesList.size();
 		double[] values = new double[size];
 		for (int i = 0; i < size; i++) {
-			values[i] = seriesList.get(i).getCooperationEvaluation().getAverageValue();
+			values[i] = seriesList.get(i).averageCooperationValue();
 		}
 		return values;
 	}
 
 	@JsonIgnore
-	public double[] getFinalPayoffValues() {
+	public double[] getAverageFinalPayoffValues() {
 
 		int size = seriesList.size();
 		double[] values = new double[size];
 		for (int i = 0; i < size; i++) {
-			values[i] = seriesList.get(i).getPayoffEvaluation().getAverageValue();
+			values[i] = seriesList.get(i).averagePayoffValue();
 		}
 		return values;
-	}
-
-	///// over time
-
-	@JsonIgnore
-	public List<Double> getCooperationValues() {
-
-		int size = generations();
-		List<Double> list = new ArrayList<>(size);
-		for (int i = 0; i < size; i++) {
-			for (SimulationSeries simulation : seriesList) {
-				list.add(simulation.getCooperationValues().get(i));
-			}
-		}
-		return list;
-	}
-
-	@JsonIgnore
-	public List<Double> getPayoffValues() {
-
-		int size = generations();
-		List<Double> list = new ArrayList<>(size);
-		for (int i = 0; i < size; i++) {
-			for (SimulationSeries simulation : seriesList) {
-				list.add(simulation.getPayoffValues().get(i));
-			}
-		}
-		return list;
 	}
 
 	////////// Print //////////
-	
+
 	@Override
 	public Table toTable() {
-		
+
 		List<SimulationSeries> simulations = getSimulationSeries();
 		Table table = new Table();
 
@@ -191,16 +253,16 @@ public class SimulationSeriesGroup extends SimulationAbstract {
 		TableRow headline = new TableRow();
 		headline.add("data").add(simulations.get(0).toHeadLine());
 		table.add(headline);
-		
-		//average
+
+		// average
 		TableRow averageLine = new TableRow();
 		averageLine.add("average").add(toTableLine());
 		table.add(averageLine);
-		
-		//series
+
+		// series
 		for (int i = 0; i < simulations.size(); i++) {
 			SimulationSeries series = simulations.get(i);
-			table.add(series.toTableLine().addFront(i+1));
+			table.add(series.toTableLine().addFront(i + 1));
 		}
 		return table;
 	}
@@ -218,8 +280,6 @@ public class SimulationSeriesGroup extends SimulationAbstract {
 		return line;
 	}
 
-
-	
 
 
 

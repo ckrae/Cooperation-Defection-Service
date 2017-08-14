@@ -12,10 +12,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import i5.las2peer.services.cdService.data.util.Table;
-import i5.las2peer.services.cdService.data.util.TableRow;
+import i5.las2peer.services.cdService.data.network.cover.Community;
+import i5.las2peer.services.cdService.data.util.table.Table;
+import i5.las2peer.services.cdService.data.util.table.TableRow;
 
 /**
  * Simulation Data
@@ -25,13 +27,14 @@ import i5.las2peer.services.cdService.data.util.TableRow;
  * 
  */
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SimulationDataset extends SimulationAbstract {
 
 	/////////////// Entity Fields ///////////////
 
 	@Id
 	@GeneratedValue
-	private long dataId;
+	private long Id;
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn
@@ -63,6 +66,12 @@ public class SimulationDataset extends SimulationAbstract {
 
 	/////////////// Getter ///////////////
 
+	@Override
+	@JsonIgnore
+	public long getId() {
+		return Id;
+	}
+
 	@JsonProperty
 	public List<Double> getCooperationValues() {
 		return this.cooperationValues;
@@ -93,11 +102,6 @@ public class SimulationDataset extends SimulationAbstract {
 		return stable;
 	}
 
-	@JsonProperty
-	public long getDataId() {
-		return dataId;
-	}
-
 	@JsonIgnore
 	public Evaluation getCooperationEvaluation() {
 		return new Evaluation(getCooperationValues());
@@ -108,24 +112,89 @@ public class SimulationDataset extends SimulationAbstract {
 		return new Evaluation(getPayoffValues());
 	}
 
-	//////////// Methods ////////////
+	////// Setter /////
 
-	public int size() {
-		return cooperationValues.size();
+	public void setAgentData(List<AgentData> agentList) {
+		this.agentData = agentList;
 	}
 
-	public int fill(int size) {
-		if (size > size()) {
+	public void setCooperationValues(List<Double> cooperationValues) {
+		this.cooperationValues = cooperationValues;
+	}
+
+	public void setPayoffValues(List<Double> payoffValues) {
+		this.payoffValues = payoffValues;
+	}
+
+	public void setStable(boolean stable) {
+		this.stable = stable;
+	}
+
+	//////////// Methods ////////////
+
+	public int generations() {
+		return getCooperationValues().size();
+	}
+	
+	public int fill(int newSize) {
+		int oldSize = getCooperationValues().size();
+		if (newSize > oldSize) {
 			double last = getFinalCooperationValue();
-			for (int i = size(); i < size; i++) {
+			for (int i = oldSize; i < newSize; i++) {
 				cooperationValues.add(last);
 			}
 			last = getFinalPayoffValue();
-			for (int i = payoffValues.size(); i < size; i++) {
+			for (int i = payoffValues.size(); i < newSize; i++) {
 				payoffValues.add(last);
 			}
 		}
-		return size;
+		return newSize;
+	}
+
+	public double[] getCommunityCooperationValues(List<Community> communityList) {
+
+		int communityCount = communityList.size();
+		double[] values = new double[communityCount];
+
+		for (int communityId = 0; communityId < communityCount; communityId++) {
+			List<Integer> memberList = communityList.get(communityId).getMembers();
+
+			try {
+				values[communityId] = getCommunityCooperationValue(memberList);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException("invalid communityList");
+			}
+		}
+		return values;
+	}
+
+	public double getCommunityCooperationValue(List<Integer> memberList) {
+
+		int agentCount = agentCount();
+		int memberCount = memberList.size();
+
+		int cooperators = 0;
+		for (int i = 0; i < memberCount; i++) {
+			int memberId = memberList.get(i);
+
+			if (memberId >= agentCount || memberId < 0)
+				throw new IllegalArgumentException("invalid memberList");
+
+			if (getAgentStrategy(memberId))
+				cooperators++;
+		}
+		return (double) cooperators / memberCount;
+	}
+
+	@JsonIgnore
+	public boolean getAgentStrategy(int agentId) {
+		return getAgentData().get(agentId).getFinalStrategy();
+	}
+
+	public int agentCount() {
+		if (this.getAgentData() == null)
+			return 0;
+		return this.getAgentData().size();
 	}
 
 	////////////// Print Data /////////////
@@ -158,10 +227,10 @@ public class SimulationDataset extends SimulationAbstract {
 	}
 
 	@Override
-	public Table toTable() {		
-		
-		Table table = new Table();				
-		
+	public Table toTable() {
+
+		Table table = new Table();
+
 		List<Double> values = getCooperationValues();
 		for (int i = 0; i < values.size(); i++) {
 			double value = values.get(i);
@@ -169,6 +238,5 @@ public class SimulationDataset extends SimulationAbstract {
 		}
 		return table;
 	}
-
 
 }

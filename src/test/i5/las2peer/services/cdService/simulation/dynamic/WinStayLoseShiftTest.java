@@ -30,7 +30,7 @@ public class WinStayLoseShiftTest {
 		myPayoff = 2.2;
 		myLastPayoff = 2.2;
 		strategy = dynamic.getNewStrategy(myStrategy, myPayoff, myLastPayoff);
-		assertEquals(true, strategy);
+		assertEquals(false, strategy);
 		
 		myStrategy = false;	
 		

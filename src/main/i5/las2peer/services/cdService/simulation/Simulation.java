@@ -4,40 +4,49 @@ package i5.las2peer.services.cdService.simulation;
 import java.util.ArrayList;
 import java.util.List;
 
+import ec.util.MersenneTwisterFast;
+import i5.las2peer.services.cdService.data.simulation.AgentData;
 import i5.las2peer.services.cdService.data.simulation.SimulationDataset;
 import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicFactory;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
 import i5.las2peer.services.cdService.simulation.game.Game;
 import i5.las2peer.services.cdService.simulation.game.GameFactory;
+import i5.las2peer.services.cdService.simulation.game.GameType;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
 import sim.field.network.Network;
 import sim.util.Bag;
 
+/**
+ * the main class 
+ */
 public class Simulation extends SimState {
 	private static final long serialVersionUID = 1;
 
-	//// Simulations Settings
-
-	private final int MAX_ITERATIONS = 1000;
+	////// Simulations Settings //////
+		
 	/**
-	 * the network, a agent on every node.
+	 * the network, one agent on every node.
 	 */
-	private final Network network;
+	private Network network;
+	
 	/**
 	 * the game, determines the payoff updating
 	 */
-	private final Game game;
+	private Game game;
+	
 	/**
 	 * the dynamic, determines the strategy updating
 	 */
-	private final Dynamic dynamic;
+	private Dynamic dynamic;
+	
 	/**
 	 * record data
 	 */
-	private final DataRecorder recorder;
+	private DataRecorder recorder;
+	
 	/**
 	 * break condition
 	 */
@@ -55,8 +64,9 @@ public class Simulation extends SimState {
 		this.network = network;
 		this.game = game;
 		this.dynamic = dynamic;
-		this.recorder = new DataRecorder(this);
-
+		this.breakCondition = new BreakCondition();
+		this.recorder = new DataRecorder(breakCondition.getMaxIterations());
+		
 	}
 
 	public Simulation(long seed) {
@@ -65,9 +75,11 @@ public class Simulation extends SimState {
 		Network netw = new Network(false);
 
 		this.network = netw;
-		this.game = GameFactory.getInstance().build(2, 4);
+		this.game = GameFactory.getInstance().build(GameType.PRISONERS_DILEMMA, 1, 2);
 		this.dynamic = DynamicFactory.getInstance().build(DynamicType.REPLICATOR, 1.5);
-		this.recorder = new DataRecorder(this);
+		this.breakCondition = new BreakCondition();
+		this.recorder = new DataRecorder(breakCondition.getMaxIterations());
+
 
 		ArrayList<Agent> agentList = new ArrayList<Agent>(20);
 		for (int i = 0; i < 20; i++) {
@@ -79,7 +91,10 @@ public class Simulation extends SimState {
 		}
 
 	}
-
+	
+	/**
+	 * the main loop. Used in console mode.
+	 */
 	public static void main(String[] args) {
 		doLoop(Simulation.class, args);
 		System.exit(0);
@@ -88,7 +103,7 @@ public class Simulation extends SimState {
 	///////// Initialize /////////	
 	
 	/**
-	 * prepare for a new simulation run
+	 * Prepare for a new simulation run. Called before each simulation.
 	 */
 	@Override
 	public void start() {
@@ -99,14 +114,17 @@ public class Simulation extends SimState {
 		stopper.add(schedule.scheduleRepeating(1, 3, recorder));
 		initAgents(stopper);
 
-		breakCondition = new BreakCondition(stopper);
+		breakCondition = new BreakCondition();
 		breakCondition.add(schedule.scheduleRepeating(1, 4, breakCondition));
 	}
-
+	
+	/**
+	 * Initialize the network agents. 
+	 */
 	protected void initAgents(List<Stoppable> stopper) {
 
 		// Set random strategies 50/50
-		Bag agents = new Bag(network.getAllNodes());
+		Bag agents = this.getAgents();
 		int size = agents.size();
 
 		int cooperation = 0;
@@ -133,25 +151,15 @@ public class Simulation extends SimState {
 
 			stopper.add(schedule.scheduleRepeating(1, 2, agent));
 			stopper.add(schedule.scheduleRepeating(2, 1, new Steppable() {
+				private static final long serialVersionUID = 1L;
 				@Override
 				public void step(SimState state) {
 					agent.updateDynamicStep(state);
 				}
 			}));
-
 		}
-
 	}
-
-	public boolean isBreakCondition() {
-
-		if (this.getRound() > 4) {
-			return breakCondition.isBreakCondition(this);
-		}
-		return false;
-
-	}
-
+	
 	//////// Simulation Data /////////
 
 	/**
@@ -202,7 +210,12 @@ public class Simulation extends SimState {
 		}
 		return totalPayoff;
 	}
-
+	
+	/**
+	 * Average Payoff
+	 * 
+	 * @return average payoff value
+	 */
 	public double getAveragePayoff() {
 
 		double totalPayoff = getTotalPayoff();
@@ -213,32 +226,65 @@ public class Simulation extends SimState {
 		}
 		return value;
 	}
-
+	
+	/**
+	 * @return current simulation round
+	 */
 	public int getRound() {
-		return (int) schedule.getSteps();
+		return  (int) schedule.getSteps();
+	}
+	
+	/**
+	 * @return random generator
+	 */
+	public MersenneTwisterFast getRandom() {
+		return  this.random;
 	}
 
+	/**
+	 * Returns the results of this simulation as {@link SimulationDataset}
+	 * 
+	 * @return SimulationData
+	 */
 	public SimulationDataset getSimulationData() {
-		return recorder.getSimulationData();
+		
+		Bag agents = getAgents();
+		int size = agents.size();
+		List<AgentData> agentDataList = new ArrayList<AgentData>(size);
+		for(int agentId=0; agentId<size; agentId++) {
+			agentDataList.add(((Agent) agents.get(agentId)).getAgentData());
+		}
+		
+		SimulationDataset simulationData = new SimulationDataset();
+		simulationData.setCooperationValues(recorder.getCooperationValues());
+		simulationData.setPayoffValues(recorder.getPayoffValues());
+		simulationData.setAgentData(agentDataList);
+		return simulationData;
 	}
-
+	
+	/**
+	 * Hides SimulationData UI element. Used only in UI mode.
+	 */
 	public boolean hideSimulationData() {
 		return true;
 	}
-
-	/////// Get Simulation Settings /////////
-
-	public int getMaxIterations() {
-		return this.MAX_ITERATIONS;
+	
+	protected Bag getAgents() {
+		return new Bag(getNetwork().getAllNodes());
 	}
 
+	/////// Get Simulation Settings /////////	
+		
 	/**
 	 * @return the network
 	 */
 	public Network getNetwork() {
 		return network;
 	}
-
+	
+	/**
+	 * Hides network UI element. Used only in UI mode.
+	 */
 	public boolean hideNetwork() {
 		return true;
 	}
@@ -249,7 +295,10 @@ public class Simulation extends SimState {
 	public Game getGame() {
 		return game;
 	}
-
+	
+	/**
+	 * Hides Game UI element. Used only in UI mode.
+	 */
 	public boolean hideGame() {
 		return true;
 	}
@@ -260,20 +309,27 @@ public class Simulation extends SimState {
 	public Dynamic getDynamic() {
 		return dynamic;
 	}
-
+	
+	/**
+	 * Hides Dynamic UI element. Used only in UI mode.
+	 */
 	public boolean hideDynamic() {
 		return true;
 	}
-
+	
 	/**
-	 * @return the recorder
+	 * @return the data recorder
 	 */
-	public DataRecorder getDataRecorder() {
+	protected DataRecorder getDataRecorder() {
 		return recorder;
 	}
-
-	public boolean hideDataRecorder() {
-		return true;
+	
+	/**
+	 * @return the data recorder
+	 */
+	protected BreakCondition getBreakCondition() {
+		return breakCondition;
 	}
+	
 
 }

@@ -42,9 +42,28 @@
 	
 	
 	<persistence-unit name="SimulationTest"	transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<class>i5.las2peer.services.cdService.data.simulation.AgentData</class>
+		<class>i5.las2peer.services.cdService.data.simulation.Evaluation</class>
+		<class>i5.las2peer.services.cdService.data.simulation.Parameters</class>
+		<class>i5.las2peer.services.cdService.data.simulation.SimulationDataset</class>
+		<class>i5.las2peer.services.cdService.data.simulation.SimulationSeries</class>
+		<class>i5.las2peer.services.cdService.data.simulation.SimulationSeriesGroup</class>
 		
-		<provider>org.hibernate.ejb.HibernatePersistence</provider>
-		<jar-file>i5.las2peer.services.cdService-1.0.jar</jar-file>
+		<class>i5.las2peer.services.cdService.data.network.DynamicGraph</class>
+		<class>i5.las2peer.services.cdService.data.network.NetworkMeta</class>
+		<class>i5.las2peer.services.cdService.data.network.NetworkStructure</class>
+		<class>i5.las2peer.services.cdService.data.network.NetworkStructureEdge</class>
+		<class>i5.las2peer.services.cdService.data.network.NetworkStructureNode</class>
+		<class>i5.las2peer.services.cdService.data.network.Properties</class>
+		
+		<class>i5.las2peer.services.cdService.data.network.cover.Community</class>
+		<class>i5.las2peer.services.cdService.data.network.cover.Cover</class>
+		
+		<class>i5.las2peer.services.cdService.data.mapping.Correlation</class>
+		<class>i5.las2peer.services.cdService.data.CoverSimulationSeriesMapping</class>
+		<class>i5.las2peer.services.cdService.data.CommunitySimulationSeriesMapping</class>
+		<class>i5.las2peer.services.cdService.data.CommunityDataSetMapping</class>
 		
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" />

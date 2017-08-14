@@ -5,8 +5,7 @@ import i5.las2peer.services.cdService.simulation.Agent;
 import i5.las2peer.services.cdService.simulation.Simulation;
 
 /**
- *
- * Replicator
+ * Implementation of the spatial Replicator update dynamic
  * 
  */
 public class Replicator extends Dynamic {
@@ -17,49 +16,77 @@ public class Replicator extends Dynamic {
 
 	final static DynamicType TYPE = DynamicType.REPLICATOR;
 
-	/////////////// Constructor ////////////	
-	protected Replicator(double[] value) {
-
-		super(value);
-	}
-	
-	public Replicator(double value) {
-		this(new double[]{value});
-	}
+	/////////////// Constructor ////////////
 	
 	public Replicator() {
-		
+
+	}
+	
+	protected Replicator(double value) {
+		super(value);
 	}
 
 	/////////////// Methods /////////////////
-	
+
 	@Override
 	public DynamicType getDynamicType() {
 		return Replicator.TYPE;
 	}
 
-	/// Dependencies
+	/**
+	 * 
+	 * Determine the new strategy of a agent by calling
+	 * {@link #getNewStrategy(boolean, boolean, double, double, MersenneTwisterFast, int, int, double)}
+	 * 
+	 * @param agent
+	 * @param simulation
+	 *
+	 * @return new strategy
+	 */
 	@Override
 	public boolean getNewStrategy(Agent agent, Simulation simulation) {
-		
-		int round = simulation.getRound()-1;
+
+		int round = simulation.getRound() - 1;
 		MersenneTwisterFast random = simulation.random;
-				
+
 		Agent neighbour = agent.getRandomNeighbour(random);
 		if (neighbour == null)
 			return agent.getStrategy(round);
-		
+
 		boolean myStrategy = agent.getStrategy(round);
 		boolean otherStrategy = neighbour.getStrategy(round);
 		double myPayoff = agent.getPayoff(round);
 		double otherPayoff = neighbour.getPayoff(round);
 		int myNeighSize = agent.getNeighbourhood().size();
 		int otherNeighSize = neighbour.getNeighbourhood().size();
-		
-		return getNewStrategy(myStrategy, otherStrategy, myPayoff, otherPayoff, random, myNeighSize, otherNeighSize, getValues()[0]);
+		double value = getValues()[0];
+
+		return getNewStrategy(myStrategy, otherStrategy, myPayoff, otherPayoff, random, myNeighSize, otherNeighSize,
+				value);
 	}
-	
-	/// Algorithm
+
+	/**
+	 * compare a agent with his neighbour to determine his new strategy
+	 * 
+	 * @param myStrategy
+	 *            agent strategy
+	 * @param otherStrategy
+	 *            neighbour strategy
+	 * @param myPayoff
+	 *            agent payoff
+	 * @param otherPayoff
+	 *            neighbour payoff
+	 * @param random
+	 *            random number generator
+	 * @param myNeighSize
+	 *            agent neighbourhood size
+	 * @param otherNeighSize
+	 *            neighbour neighbourhood size
+	 * @param value
+	 *            dynamic parameter value
+	 * 
+	 * @return new strategy
+	 */
 	protected boolean getNewStrategy(boolean myStrategy, boolean otherStrategy, double myPayoff, double otherPayoff,
 			MersenneTwisterFast random, int myNeighSize, int otherNeighSize, double value) {
 
@@ -71,7 +98,5 @@ public class Replicator extends Dynamic {
 		}
 		return myStrategy;
 	}
-
-	
 
 }

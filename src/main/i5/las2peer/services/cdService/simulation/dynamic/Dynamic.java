@@ -6,9 +6,8 @@ import i5.las2peer.services.cdService.simulation.Agent;
 import i5.las2peer.services.cdService.simulation.Simulation;
 
 /**
- *
- * Dynamics are used to update the nodes strategies The concrete update rules
- * are implemented as sub classes
+ * Dynamics are used to update the nodes strategies. The concrete update rules
+ * have to be implemented as sub classes.
  * 
  */
 public abstract class Dynamic implements Serializable {
@@ -18,20 +17,24 @@ public abstract class Dynamic implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * parameters of the dynamic
+	 * parameters of the dynamic.
 	 */
 	private double[] values;
 
 	/////////////// Constructor //////////
 
 	protected Dynamic() {
-		this(null);
+		this(1.5);
 	}
-
+	
+	protected Dynamic(double value) {
+		this(new double[]{value});
+	}
+	
 	protected Dynamic(double[] values) {
 		this.values = values;
 	}
-
+	
 	/////////////// Methods ///////////////	
 
 	public double[] getValues() {
@@ -41,12 +44,16 @@ public abstract class Dynamic implements Serializable {
 	/////////////// Override ///////////////
 
 	/**
-	 * this method determines the concrete update rule dynamic it have to be
+	 * determines the concrete update rule dynamic it have to be
 	 * implemented in the sub classes
-	 * 
+	 * 	 
 	 */
 	public abstract boolean getNewStrategy(Agent agent, Simulation simulation);
-
+	
+	
+	/**
+	 * assign a dynamic type to a concrete subclass 
+	 */
 	public abstract DynamicType getDynamicType();
 
 }

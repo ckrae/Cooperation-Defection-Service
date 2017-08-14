@@ -3,10 +3,7 @@ package i5.las2peer.services.cdService.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import i5.las2peer.api.exceptions.RemoteServiceException;
 import i5.las2peer.api.exceptions.ServiceInvocationException;
-import i5.las2peer.api.exceptions.ServiceNotAvailableException;
-import i5.las2peer.api.exceptions.ServiceNotFoundException;
 import i5.las2peer.services.cdService.data.mapping.CoverSimulationSeriesMapping;
 import i5.las2peer.services.cdService.data.mapping.MappingFactory;
 import i5.las2peer.services.cdService.data.network.GraphAdapter;
@@ -33,22 +30,31 @@ public class MappingDataProvider {
 		return new MappingDataProvider();
 	}
 	
-	public List<CoverSimulationSeriesMapping> getCoverSimulationSeriesMappings(long seriesId) throws ServiceInvocationException {
+	public CoverSimulationSeriesMapping getCoverSimulationSeriesMapping(long coverId, long seriesId) throws ServiceInvocationException {
 
-		SimulationSeries series = simulationDataProvider.getSimulationSeries(seriesId);
-		long graphId = series.getParameters().getGraphId();
-		NetworkMeta network = networkDataProvider.getNetwork(graphId);
-		
-		List<Integer> coverIds = null;	
-		
-		if(coverIds == null || coverIds.isEmpty())
+		SimulationSeries series = simulationDataProvider.getSimulationSeries(seriesId);		
+		Cover cover = coverDataProvider.getCover(coverId);
+				
+		if(cover == null || series == null)
 			return null;
 		
-		List<CoverSimulationSeriesMapping> mappings = new ArrayList<CoverSimulationSeriesMapping>();
-		for (Integer coverId : coverIds) {
-			Cover cover = null;
-			mappings.add(factory.build(cover, series));
-		}
+		CoverSimulationSeriesMapping mapping = factory.build(cover, series);
+		return mapping;
+	}
+
+	public List<CoverSimulationSeriesMapping> getCoverSimulationSeriesMappings(long seriesId) {
+		
+		List<CoverSimulationSeriesMapping> mappings = new ArrayList<>();
+		
+		SimulationSeries simulation = simulationDataProvider.getSimulationSeries(seriesId);
+		long graphId = simulation.getParameters().getGraphId();
+		NetworkMeta network = networkDataProvider.getNetwork(graphId);
+		List<Cover> covers = coverDataProvider.getCovers(network);
+		
+		for(Cover cover: covers) {
+			mappings.add(factory.build(cover, simulation));
+		}		
+		
 		return mappings;
 	}
 	

@@ -95,11 +95,7 @@ public class CoverAdapter {
 		// Get Network
 		NetworkDataProvider networkDataProvider = NetworkDataProvider.getInstance();
 		NetworkStructure network = null;
-		try {
-			network = networkDataProvider.getExternalNetwork(graphId).getNetworkStructure();
-		} catch (ServiceNotFoundException | ServiceNotAvailableException | RemoteServiceException e) {
-			e.printStackTrace();
-		}
+		network = networkDataProvider.getExternalNetwork(graphId).getNetworkStructure();
 
 		// Build Cover
 		CoverFactory factory = new CoverFactory();
@@ -107,37 +103,6 @@ public class CoverAdapter {
 		cover.setOriginId(coverId);
 		return cover;
 	}
-
-	///// Utility /////
 	
-	@SuppressWarnings("deprecation")
-	public Network getSubNetwork(Network network, ArrayList<Integer> communityMemberList) {
-		Network subNetwork = new Network(network);
-		Bag nodes = new Bag(subNetwork.getAllNodes());
-		int nodeCount = nodes.size();
-		for (int i = 0; i < nodeCount; i++) {
-			if (!communityMemberList.contains(nodes.get(i))) {
-				subNetwork.removeNode(nodes.get(i));
-			}
-		}
-		return subNetwork;
-	}
-	
-	@SuppressWarnings("deprecation")
-	public int countEdges(Network subNetwork) {
-		Bag nodes = new Bag(subNetwork.getAllNodes());
-		int nodeCount = nodes.size();
-		Set<Edge> edges = new HashSet<Edge>();
-		for (int i = 0; i < nodeCount; i++) {
-			int node = (int) nodes.get(i);
-			Bag bag = subNetwork.getEdgesIn(node);
-			for (int j = 0, js = bag.size(); j < js; j++) {
-				edges.add((Edge) bag.get(j));
-			}
-		}
-		return (edges.size());
-	}
-
-
 
 }

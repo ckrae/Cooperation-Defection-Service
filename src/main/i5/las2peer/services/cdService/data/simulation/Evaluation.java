@@ -9,12 +9,16 @@ import javax.persistence.Embeddable;
 import org.apache.commons.math3.stat.StatUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
-import i5.las2peer.services.cdService.data.util.TableInterface;
-import i5.las2peer.services.cdService.data.util.TableRow;
+import i5.las2peer.services.cdService.data.util.table.TableRow;
 
+/**
+ * 
+ *
+ */
 @Embeddable
-public class Evaluation implements Serializable, TableInterface {
+public class Evaluation implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -36,10 +40,8 @@ public class Evaluation implements Serializable, TableInterface {
 	}
 
 	public Evaluation(double[] values) {
-
-		this.average = calculateAverageValue(values);
-		this.variance = calculateVariance(values, average);
-		this.deviation = calculateStandartDeviation(variance);
+		
+		evaluate(values);
 	}
 
 	public Evaluation(List<Double> list) {
@@ -47,13 +49,17 @@ public class Evaluation implements Serializable, TableInterface {
 		double[] values = new double[list.size()];
 		for (int i = 0; i < list.size(); i++)
 			values[i] = list.get(i);
-
-		this.average = calculateAverageValue(values);
-		this.variance = calculateVariance(values, average);
-		this.deviation = calculateStandartDeviation(variance);
+		evaluate(values);
 	}
 
 	/////////// Calculations ///////////
+		
+	public void evaluate(double[] values) {
+		
+		this.average = calculateAverageValue(values);
+		this.variance = calculateVariance(values, average);
+		this.deviation = calculateStandartDeviation(variance);		
+	}
 
 	private double calculateAverageValue(double[] values) {
 
@@ -95,12 +101,28 @@ public class Evaluation implements Serializable, TableInterface {
 	public double getDeviation() {
 		return this.deviation;
 	}
-
-	/////////// Print ///////////
 	
-	@Override
-	public TableRow toTableLine() {		
+	////// Setter //////
+	
+	@JsonSetter
+	public void setAverageValue(double value) {
+		this.average = value;
+	}
 
+	@JsonSetter
+	public void setVariance(double variance) {
+		this.variance = variance;
+	}
+
+	@JsonSetter
+	public void setDeviation(double deviation) {
+		this.deviation = deviation;
+	}
+
+	/////////// Table ///////////
+	
+	public TableRow toTableLine() {
+		
 		TableRow line = new TableRow();		
 		line.add(getAverageValue()).add(getVariance()).add(getDeviation());		
 		return line;
@@ -111,7 +133,6 @@ public class Evaluation implements Serializable, TableInterface {
 		TableRow line = new TableRow();
 		line.add("average").add("variance").add("deviation");
 		return line;
-
 	}
 
 }

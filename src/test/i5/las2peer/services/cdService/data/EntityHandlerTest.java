@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import i5.las2peer.services.cdService.data.network.NetworkMeta;
+import i5.las2peer.services.cdService.data.network.NetworkStructureBuilder;
 import i5.las2peer.services.cdService.data.network.cover.AlgorithmType;
 import i5.las2peer.services.cdService.data.network.cover.Cover;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
@@ -38,6 +39,10 @@ public class EntityHandlerTest {
 		Query query = em.createQuery("DELETE FROM Cover", NetworkMeta.class);
 		query.executeUpdate();
 		query = em.createQuery("DELETE FROM Networks", NetworkMeta.class);
+		query.executeUpdate();
+		query = em.createQuery("DELETE FROM AgentData", SimulationSeries.class);
+		query.executeUpdate();
+		query = em.createQuery("DELETE FROM SimulationDataset", SimulationSeries.class);
 		query.executeUpdate();
 		query = em.createQuery("DELETE FROM SimulationSeries", SimulationSeries.class);
 		query.executeUpdate();
@@ -68,7 +73,7 @@ public class EntityHandlerTest {
 
 		assertNotNull(resultSeries);
 		assertEquals(userId, resultSeries.getUserId());
-		assertEquals(seriesId, resultSeries.getSeriesId());
+		assertEquals(seriesId, resultSeries.getId());
 	}
 
 	@Test
@@ -83,7 +88,7 @@ public class EntityHandlerTest {
 		em.persist(series);
 		em.flush();
 		em.getTransaction().commit();
-		long seriesId = series.getSeriesId();
+		long seriesId = series.getId();
 		em.close();
 
 		SimulationSeries resultSeries = null;
@@ -95,7 +100,7 @@ public class EntityHandlerTest {
 
 		assertNotNull(resultSeries);
 		assertEquals(userId, resultSeries.getUserId());
-		assertEquals(seriesId, resultSeries.getSeriesId());
+		assertEquals(seriesId, resultSeries.getId());
 
 	}
 
@@ -109,7 +114,12 @@ public class EntityHandlerTest {
 		String graphName = "TestGraph";
 		NetworkMeta network = new NetworkMeta();
 		network.setGraphName(graphName);
-
+		
+		NetworkStructureBuilder structure = new NetworkStructureBuilder();
+		structure.addEdge(0, 1);
+		structure.addEdge(2, 1);
+		network.setNetworkStructure(structure.build());
+		
 		EntityManager em = factory.createEntityManager();
 		em.getTransaction().begin();
 		em.persist(network);
@@ -121,6 +131,8 @@ public class EntityHandlerTest {
 		assertNotNull(resultNetwork);
 		assertEquals(networkId, resultNetwork.getNetworkId());
 		assertEquals(graphName, resultNetwork.getName());
+		assertNotNull(resultNetwork.getNetworkStructure());
+		assertEquals(3, resultNetwork.getNetworkStructure().getNodes().size());
 
 	}
 
@@ -131,6 +143,11 @@ public class EntityHandlerTest {
 		String graphName = "TestGraph";
 		NetworkMeta network = new NetworkMeta(networkId);
 		network.setGraphName(graphName);
+		
+		NetworkStructureBuilder structure = new NetworkStructureBuilder();
+		structure.addEdge(0, 1);
+		structure.addEdge(2, 1);
+		network.setNetworkStructure(structure.build());
 
 		long resultId = EntityHandler.getInstance().storeNetwork(network);
 		EntityManager em = factory.createEntityManager();
@@ -142,6 +159,8 @@ public class EntityHandlerTest {
 
 		assertEquals(1, networks.size());
 		assertEquals(graphName, resultNetwork.getName());
+		assertNotNull(resultNetwork.getNetworkStructure());
+		assertEquals(3, resultNetwork.getNetworkStructure().getNodes().size());
 	}
 
 	@Test

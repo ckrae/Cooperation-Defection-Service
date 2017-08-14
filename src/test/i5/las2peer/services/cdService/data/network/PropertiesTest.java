@@ -7,61 +7,80 @@ import org.junit.Test;
 public class PropertiesTest {
 
 	@Test
-	public void DensityTest() {
+	public void calculateDensity() {
 		
-		Properties properties = new Properties();
-		int nodes;
-		int edges;
-		double density;		
+		NetworkProperties networkProperties = new NetworkProperties();
+		double density;
 		
-		assertNotNull(properties);
-		
-		density = properties.calculateDensity(5, 4);
+		density = networkProperties.calculateDensity(5, 4);
 		assertEquals(0.4, density, 0.01);		
 		
-		density = properties.calculateDensity(1, 4);
+		density = networkProperties.calculateDensity(1, 4);
 		assertEquals(0.0, density, 0.01);
 		
-		density = properties.calculateDensity(6, 10);
+		density = networkProperties.calculateDensity(6, 10);
 		assertEquals(0.66, density, 0.01);	
-		
-		nodes = 5;
-		edges = 4;
-		properties.setNodes(nodes);
-		properties.setEdges(edges);
-		assertEquals(5, properties.getNodes());
-		assertEquals(4, properties.getEdges());
-		density = properties.getDensity();
-		assertEquals(0.4, density, 0.01);		
 	}
+	
+	@Test
+	public void getDensity() {
+		
+		NetworkProperties networkProperties = new NetworkProperties();
+		double density;
+		
+		networkProperties.setNodes(5);
+		networkProperties.setEdges(4);
+		assertEquals(5, networkProperties.getNodes());
+		assertEquals(4, networkProperties.getEdges());
+		density = networkProperties.getDensity();
+		assertEquals(0.4, density, 0.01);
+	}
+
 	
 	@Test
 	public void AverageDegreeTest() {
 		
-		Properties properties = new Properties();
-		int nodes;
-		int edges;
+		NetworkProperties networkProperties = new NetworkProperties();
 		double degree;		
 		
-		assertNotNull(properties);
-		
-		degree = properties.calculateAverageDegree(5, 4);
+		degree = networkProperties.calculateAverageDegree(5, 4);
 		assertEquals(1.6, degree, 0.01);		
 		
-		degree = properties.calculateAverageDegree(1, 4);
+		degree = networkProperties.calculateAverageDegree(1, 4);
 		assertEquals(8.0, degree, 0.01);
 		
-		degree = properties.calculateAverageDegree(6, 10);
+		degree = networkProperties.calculateAverageDegree(6, 10);
 		assertEquals(3.33, degree, 0.01);	
 		
-		nodes = 5;
-		edges = 4;
-		properties.setNodes(nodes);
-		properties.setEdges(edges);
-		assertEquals(5, properties.getNodes());
-		assertEquals(4, properties.getEdges());
-		degree = properties.getAverageDegree();
+	}
+	
+	@Test
+	public void getAverageDegree() {
+		
+		NetworkProperties networkProperties = new NetworkProperties();
+		double degree;		
+		
+		networkProperties.setNodes(5);
+		networkProperties.setEdges(4);
+		assertEquals(5, networkProperties.getNodes());
+		assertEquals(4, networkProperties.getEdges());
+		degree = networkProperties.getAverageDegree();
 		assertEquals(1.6, degree, 0.01);		
+	}
+	
+	@Test
+	public void DegreeDeviationTest() {
+		
+		NetworkProperties networkProperties = new NetworkProperties();
+		double deviation;
+		
+		deviation = networkProperties.calculateDegreeDeviation(new double[]{1.0, 4.0, 3.0, 3.0});
+		assertEquals(1.2583, deviation, 0.00001);
+		
+		deviation = networkProperties.calculateDegreeDeviation(new double[]{2.0, 2.0, 2.0, 2.0});
+		assertEquals(0.0, deviation, 0.00001);	
+
+		
 	}
 	
 }

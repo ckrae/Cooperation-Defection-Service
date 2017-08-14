@@ -11,21 +11,19 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import i5.las2peer.api.exceptions.RemoteServiceException;
-import i5.las2peer.api.exceptions.ServiceNotAvailableException;
-import i5.las2peer.api.exceptions.ServiceNotFoundException;
 import i5.las2peer.services.cdService.data.network.cover.Cover;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
-import i5.las2peer.services.cdService.data.util.TableRow;
+import i5.las2peer.services.cdService.data.util.table.TableRow;
 
 @Entity(name = "Networks")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NetworkMeta implements GraphInterface {
 
 	@Id
@@ -48,15 +46,15 @@ public class NetworkMeta implements GraphInterface {
 	private int size;
 
 	@Embedded
-	private Properties properties;
-
-	@OneToOne
+	private NetworkProperties networkProperties;
+		
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)	
 	NetworkStructure structure;
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)	
 	private List<Cover> covers;
 
-	@ManyToMany(fetch = FetchType.LAZY)
+	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<SimulationSeries> simulations;
 
 	public NetworkMeta() {
@@ -104,19 +102,14 @@ public class NetworkMeta implements GraphInterface {
 
 	@Override
 	@JsonProperty
-	public Properties getProperties() {
-		if (properties == null) {
-			Properties properties = new Properties();
+	public NetworkProperties getProperties() {
+		if (networkProperties == null) {
+			NetworkProperties networkProperties = new NetworkProperties();
 
-			NetworkStructure network = null;
-			try {
-				network = getNetworkStructure();
-			} catch (ServiceNotFoundException | ServiceNotAvailableException | RemoteServiceException e) {
-				e.printStackTrace();
-			}
-
+			NetworkStructure network = getNetworkStructure();
+		
 			if (network == null) {
-				return new Properties();
+				return new NetworkProperties();
 			}
 
 			int size = network.nodeCount();
@@ -125,14 +118,14 @@ public class NetworkMeta implements GraphInterface {
 			for (int id = 0; id < size; id++) {				
 				degrees[id] = network.getEdges(id).size();
 			}
-			properties.setNodes(size);
-			properties.setEdges(edges);
-			properties.setDegreeDeviation(properties.calculateDegreeDeviation(degrees));
+			networkProperties.setNodes(size);
+			networkProperties.setEdges(edges);
+			networkProperties.setDegreeDeviation(networkProperties.calculateDegreeDeviation(degrees));
 
-			this.properties = properties;
+			this.networkProperties = networkProperties;
 		}
 
-		return properties;
+		return networkProperties;
 	}
 
 	@JsonIgnore
@@ -140,19 +133,8 @@ public class NetworkMeta implements GraphInterface {
 		return covers;
 	}
 
-	@JsonIgnore
-	public NetworkStructure getNetworkStructure()
-			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
-		if (structure == null) {
-			switch (origin) {
-			case OCD_Service:
-				structure = new GraphAdapter().inovkeGraphStructure(originId);
-				break;
-			case CLIENT:
-			default:
-				break;
-			}
-		}
+	@JsonProperty
+	public NetworkStructure getNetworkStructure() {		
 		return structure;
 	}
 
@@ -186,20 +168,25 @@ public class NetworkMeta implements GraphInterface {
 	public void setOriginId(long originId) {
 		this.originId = originId;
 	}
+	
+	public void setNetworkStructure(NetworkStructure network) {
+		this.structure = network;
+	}
 
 	@Override
-	public void setProperties(Properties properties) {
-		this.properties = properties;
+	public void setProperties(NetworkProperties networkProperties) {
+		this.networkProperties = networkProperties;
 	}
+	
 
 	/// Print ///
 
 	public TableRow toTableLine() {
 
-		Properties properties = getProperties();
+		NetworkProperties networkProperties = getProperties();
 
 		TableRow line = new TableRow();
-		line.add(getName()).add(properties.toTableLine());
+		line.add(getName()).add(networkProperties.toTableLine());
 		return line;
 	}
 

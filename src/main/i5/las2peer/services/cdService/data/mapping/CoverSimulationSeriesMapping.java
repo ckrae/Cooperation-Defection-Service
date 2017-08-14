@@ -2,112 +2,92 @@ package i5.las2peer.services.cdService.data.mapping;
 
 import java.util.List;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import i5.las2peer.services.cdService.data.network.PropertyType;
+import i5.las2peer.services.cdService.data.network.cover.Community;
 import i5.las2peer.services.cdService.data.network.cover.Cover;
-import i5.las2peer.services.cdService.data.util.Table;
-import i5.las2peer.services.cdService.data.util.TableRow;
+import i5.las2peer.services.cdService.data.simulation.SimulationSeries;
+import i5.las2peer.services.cdService.data.util.table.Table;
+import i5.las2peer.services.cdService.data.util.table.TableRow;
 
 @Entity
 public class CoverSimulationSeriesMapping extends MappingAbstract {
 
-	///// Entity Fields /////
-
-	@Id
-	@GeneratedValue
-	private long id;
+///// Entity Fields /////
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Cover cover;
 
-	@OneToMany(fetch = FetchType.LAZY)
-	private List<CommunitySimulationSeriesMapping> mappings;
-
-	@ElementCollection
-	List<Double> cooperationValues;
-
-	@Embedded
-	Correlation correlation;
-
-	///// Constructor /////
-
-	public CoverSimulationSeriesMapping() {
-
-	}
+	@ManyToOne(fetch = FetchType.LAZY)
+	private SimulationSeries simulation;
 
 	///// Getter /////
-
-	@JsonProperty
+		
+	@JsonIgnore
 	public Cover getCover() {
 		return cover;
 	}
 
-	@JsonProperty
-	public List<CommunitySimulationSeriesMapping> getMappings() {
-		return mappings;
-	}
-
 	@JsonIgnore
-	public List<Double> getCooperationValues() {
-		return cooperationValues;
+	public SimulationSeries getSimulation() {
+		return simulation;
 	}
-
-	@JsonProperty
-	public Correlation getCorrelation() {
-		if(correlation == null)
-			correlation = new Correlation();
-		return correlation;
-	}	
-
 	///// Setter /////
-
+	
+	@JsonIgnore
 	public void setCover(Cover cover) {
 		this.cover = cover;
 	}
 
-	public void setMappings(List<CommunitySimulationSeriesMapping> mappings) {
-		this.mappings = mappings;
+	@JsonIgnore
+	public void setSimulation(SimulationSeries simulation) {
+		this.simulation = simulation;
 	}
-
-	public void setCooperationValues(List<Double> cooperationValues) {
-		this.cooperationValues = cooperationValues;
-	}
-
-	///// Methods /////
-
 	
+	///// Methods /////
+		
+	@Override
+	@JsonProperty
+	public double[] getPropertyValues(PropertyType property) {
+			
+		int size = getCover().communityCount();
+		double[] properties = new double[size];
+		
+		for(int i=0; i<size; i++) {
+			properties[i] = getCover().getCommunity(i).getProperty(property);
+		}
+		return properties;
+	}
+	
+	@Override
+	@JsonProperty
+	public double[] getCooperationValues() {
+		
+		List<Community> communityList = getCover().getCommunities();
+		double[] values = getSimulation().getAverageCommunityCooperationValues(communityList);
+		
+		return values;		
+	}
 	
 	///// Print /////
-
+	
 	@Override
 	public TableRow toTableLine() {
-
-		TableRow line = new TableRow();
-		line.add("");
-		return line;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Table toTable() {
 		// TODO Auto-generated method stub
 		return null;
-	}
+	}	
 
-	@Override
-	public String tableName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 
 

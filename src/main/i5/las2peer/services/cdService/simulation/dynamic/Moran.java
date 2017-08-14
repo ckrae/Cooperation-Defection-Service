@@ -21,7 +21,6 @@ public class Moran extends Dynamic {
 	/////////////// Constructor ////////////
 
 	protected Moran() {
-
 		super();
 	}
 
@@ -31,22 +30,24 @@ public class Moran extends Dynamic {
 	/// Dependencies
 	public boolean getNewStrategy(Agent agent, Simulation simulation) {
 
-		Bag neighbours = agent.getNeighbourhood();
-		int size = neighbours.size();
 		int round = simulation.getRound()-1;
 		MersenneTwisterFast random = simulation.random;
 		
+		Bag neighbours = agent.getNeighbourhood();
+		int size = neighbours.size() + 1;
+		
 		boolean[] strategies = new boolean[size];
 		double[] payoff = new double[size];
-		strategies[0] = agent.getStrategy(round);
-		payoff[0] = agent.getPayoff(round);
-		for (int i = 1; i < size; i++) {
-			Agent neighbour = (Agent) neighbours.get(i);
-			strategies[i] = neighbour.getStrategy(round);
-			payoff[i] = neighbour.getPayoff(round);
+		strategies[size - 1] = agent.getStrategy(round);
+		payoff[size - 1] = agent.getPayoff(round);
+		
+		for (int neighbourId = 0; neighbourId < size - 1; neighbourId++) {
+			Agent neighbour = (Agent) neighbours.get(neighbourId);
+			strategies[neighbourId] = neighbour.getStrategy(round);
+			payoff[neighbourId] = neighbour.getPayoff(round);
 		}
 		
-		return getNewStrategy(round, strategies, payoff, random);
+		return getNewStrategy(size, strategies, payoff, random);
 	}
 	
 	/// Algorithm

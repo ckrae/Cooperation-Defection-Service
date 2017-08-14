@@ -1,7 +1,6 @@
 package i5.las2peer.services.cdService;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
@@ -10,10 +9,7 @@ import java.util.HashMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -22,7 +18,9 @@ import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.cdService.data.EntityHandler;
+import i5.las2peer.services.cdService.data.PersistenceUtil;
 import i5.las2peer.services.cdService.data.network.NetworkMeta;
+import i5.las2peer.services.cdService.data.network.NetworkStructureBuilder;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
@@ -49,10 +47,8 @@ public class ServiceTest {
 	private static final String passAbel = "abelspass";
 
 	private static final String mainPath = "cdService/";
-	
-	private static final String PERSISTENCE_UNIT_NAME = "SimulationTest";
-	private static final EntityManagerFactory factory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME);
-	private static final EntityHandler entityHandler = EntityHandler.getInstance();
+
+	private static final EntityManagerFactory factory = PersistenceUtil.getEntityManagerFactory();
 	
 	private long networkId;
 
@@ -98,19 +94,23 @@ public class ServiceTest {
 
 	}
 	
-	@Before
 	public void storeTestNetwork() {		
-
+		
+		String graphName = "TestGraph";
 		NetworkMeta network = new NetworkMeta();
-		network.setGraphName("TestGraph");		
+		network.setGraphName(graphName);
+		
+		NetworkStructureBuilder structure = new NetworkStructureBuilder();
+		structure.addEdge(0, 1);
+		structure.addEdge(2, 1);
+		network.setNetworkStructure(structure.build());
+		
 		EntityManager em = factory.createEntityManager();
 		em.getTransaction().begin();
 		em.persist(network);
 		em.flush();
 		networkId = network.getNetworkId();
-		System.out.println(networkId);		
 		em.getTransaction().commit();
-		em.close();
 		
 	}
 	
@@ -142,28 +142,14 @@ public class ServiceTest {
 	public void testPostSimulation() {
 		MiniClient c = new MiniClient();
 		c.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
-		assertTrue(true);
-
+		 storeTestNetwork();
+		
 		try {
 			c.setLogin(Long.toString(agentAdam.getId()), passAdam);
 			ClientResponse result;			
-			
-			// No valid Payoff
-			result = c.sendRequest("POST", mainPath + "simulation",	"{\"graphId\":"+ networkId + ",\"dynamic\":\"\",\"dynamicValues\":[],\"payoffValues\":[1.0,2.0,3.1,0.0],\"iterations\":20}", "application/json", "text/plain", new HashMap<String,String>());
-			assertEquals(400, result.getHttpCode());
-			System.out.println("Result of 'testPost': " +	result.getResponse().trim());
-			assertTrue(result.getResponse().contains("payoff"));
-			
-			// No OCD Service accessible
-			result = c.sendRequest("POST", mainPath + "simulation",	"{\"graphId\":"+ networkId + ",\"dynamic\":\"Replicator\",\"dynamicValues\":[],\"payoffValues\":[1.0,2.0,3.1,0.0],\"iterations\":20}", "application/json", "text/plain", new HashMap<String,String>());
-			assertEquals(500, result.getHttpCode());
-			assertTrue(result.getResponse().contains("invocation"));
-			System.out.println("Result of 'testPost': " +	result.getResponse().trim());
-		
 
-			
-		
-		
+			result = c.sendRequest("POST", mainPath + "simulation",	"{\"graphId\":"+ networkId + ",\"dynamic\":\"Replicator\",\"dynamicValues\":[],\"payoffCC\":1.0,\"payoffCD\":0.0,\"payoffDC\":1.0,\"payoffDD\":0.0,\"iterations\":20}", "application/json", "text/plain", new HashMap<String,String>());
+			assertEquals(200, result.getHttpCode());		
 		
 		} catch (Exception e) {
 			e.printStackTrace();

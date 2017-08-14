@@ -74,5 +74,6 @@
 	<classpathentry kind="lib" path="service/org.eclipse.persistence.core-2.6.4.jar"/>
 	<classpathentry kind="lib" path="service/org.eclipse.persistence.jpa-2.6.4.jar"/>
 	<classpathentry kind="lib" path="service/org.eclipse.persistence.jpa.jpql-2.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math3-3.6.1.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>

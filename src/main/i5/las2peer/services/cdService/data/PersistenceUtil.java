@@ -5,18 +5,18 @@ import javax.persistence.Persistence;
 
 public class PersistenceUtil {
 
-    private static final EntityManagerFactory entityManagerFactory;
-    static {
-                try {
-                     entityManagerFactory = Persistence.createEntityManagerFactory("Simulation");
-                } catch (Exception e) {
-                	e.printStackTrace();
-                    throw new ExceptionInInitializerError(e);
-                  }
-    }
+	private static final EntityManagerFactory entityManagerFactory;
+	static {
+		try {
+			entityManagerFactory = Persistence.createEntityManagerFactory("Simulation");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ExceptionInInitializerError(e);
+		}
+	}
 
-public static EntityManagerFactory getEntityManagerFactory() {
-         return entityManagerFactory;
-    }
+	public static EntityManagerFactory getEntityManagerFactory() {
+		return entityManagerFactory;
+	}
 
 }

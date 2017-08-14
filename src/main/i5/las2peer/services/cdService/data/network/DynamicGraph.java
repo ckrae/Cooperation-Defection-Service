@@ -13,7 +13,7 @@ import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import i5.las2peer.services.cdService.data.util.Table;
+import i5.las2peer.services.cdService.data.util.table.Table;
 
 @Entity
 public class DynamicGraph implements GraphInterface {
@@ -29,8 +29,7 @@ public class DynamicGraph implements GraphInterface {
 	
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn
-	private List<NetworkMeta> networkMetas;
-	
+	private List<NetworkMeta> networkMetas;	
 	
 
 	///// Getter /////
@@ -41,7 +40,7 @@ public class DynamicGraph implements GraphInterface {
 	}
 	
 	@JsonProperty
-	public String getGraphName() {
+	public String getName() {
 		return graphName;
 	}
 	
@@ -68,13 +67,13 @@ public class DynamicGraph implements GraphInterface {
 	
 
 	@Override
-	public Properties getProperties() {
+	public NetworkProperties getProperties() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setProperties(Properties properties) {
+	public void setProperties(NetworkProperties networkProperties) {
 		// TODO Auto-generated method stub
 		
 	}

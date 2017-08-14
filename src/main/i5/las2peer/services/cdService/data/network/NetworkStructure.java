@@ -9,17 +9,19 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NetworkStructure {
 
 	///// Entity Fields /////
-	
+
 	@Id
 	@GeneratedValue
 	private int primaryId;
-	
+
 	@OneToOne(cascade = CascadeType.ALL)
 	NetworkMeta networkMeta;
 
@@ -28,6 +30,18 @@ public class NetworkStructure {
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	List<NetworkStructureEdge> edges;
+
+	///// Constructor /////
+
+	public NetworkStructure() {
+
+	}
+
+	public NetworkStructure(int size) {
+		for (int i = 0; i < size; i++) {
+			this.addNode();
+		}
+	}
 
 	///// Getter /////
 
@@ -55,20 +69,23 @@ public class NetworkStructure {
 		return getNodes().size();
 	}
 
-	public int addNode() {
+	public NetworkStructureNode getNode(int nodeId) {
+		
+		if(nodeId < 0)
+			throw new IllegalArgumentException("invalid nodeId");
+		
+		return getNodes().get(nodeId);
+	}
 
+	protected int addNode() {
 		int nodeId = getNodes().size();
 		NetworkStructureNode node = new NetworkStructureNode(nodeId);
-		nodes.add(nodeId, node);
+		getNodes().add(nodeId, node);
 		return nodeId;
 	}
 
-	public NetworkStructureNode getNode(int nodeId) {
-		return getNodes().get(nodeId);
-	}
-	
 	///// Edge /////
-	
+
 	public int edgeCount() {
 		return getEdges().size();
 	}
@@ -78,15 +95,18 @@ public class NetworkStructure {
 		if (id1 == id2)
 			throw new IllegalArgumentException("no loop allowed");
 
-		if (getNodes().get(id1).equals(id1) || getNodes().get(id2).equals(id2))
-			throw new IllegalArgumentException("Nodes not contained");
+		if (id1 < 0 || id2 < 0)
+			throw new IllegalArgumentException("no negative ids");
+
+		if (nodeCount() < id1 || nodeCount() < id2)
+			throw new IllegalArgumentException("node ids to high");
 
 		NetworkStructureEdge edge = getEdge(getNode(id1), getNode(id2));
 		if (edge != null)
 			throw new IllegalArgumentException("Edge already exists.");
 
 		edge = new NetworkStructureEdge(getNode(id1), getNode(id2));
-		edges.add(edge);
+		getEdges().add(edge);
 		return edge;
 	}
 
@@ -102,7 +122,7 @@ public class NetworkStructure {
 	}
 
 	///// Methods /////
-	
+
 	public List<NetworkStructureEdge> getEdges(int nodeId) {
 
 		List<NetworkStructureEdge> edgeList = new ArrayList<>();
@@ -129,15 +149,15 @@ public class NetworkStructure {
 
 	public NetworkStructure getSubNetwork(List<Integer> nodeIds) {
 
-		NetworkStructureBuilder<Integer> networkBuilder = new NetworkStructureBuilder<Integer>();
+		NetworkStructureBuilder networkStructureBuilder = new NetworkStructureBuilder();
 		List<NetworkStructureEdge> edgeList = getEdges(nodeIds);
 
 		for (NetworkStructureEdge edge : edgeList) {
-			networkBuilder.addEdge(edge.getFrom().getId(), edge.getTo().getId());
+			networkStructureBuilder.addEdge(edge.getFrom().getId(), edge.getTo().getId());
 		}
-		return networkBuilder.build();
+		return networkStructureBuilder.build();
 	}
-	
+
 	public List<Integer> toEdgeList() {
 		List<Integer> edgeList = new ArrayList<>();
 		return edgeList;

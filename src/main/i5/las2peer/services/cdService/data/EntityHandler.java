@@ -2,11 +2,9 @@ package i5.las2peer.services.cdService.data;
 
 import java.util.List;
 
-import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
-import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
 import i5.las2peer.api.Context;
@@ -22,7 +20,7 @@ public class EntityHandler {
 	private static EntityHandler databaseManager;
 	private EntityManagerFactory factory;
 
-	private EntityHandler() {
+	public EntityHandler() {
 
 		factory = PersistenceUtil.getEntityManagerFactory();
 	}
@@ -51,10 +49,9 @@ public class EntityHandler {
 		EntityManager em = factory.createEntityManager();
 		em.getTransaction().begin();
 		em.persist(series);
-		em.flush();
 		em.getTransaction().commit();
 
-		long seriesId = series.getSeriesId();
+		long seriesId = series.getId();
 		em.close();
 
 		return seriesId;

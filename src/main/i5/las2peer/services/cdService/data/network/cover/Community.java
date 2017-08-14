@@ -12,12 +12,16 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
-import i5.las2peer.services.cdService.data.network.Properties;
+import i5.las2peer.services.cdService.data.network.NetworkProperties;
 import i5.las2peer.services.cdService.data.network.PropertyInterface;
+import i5.las2peer.services.cdService.data.network.PropertyType;
 
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Community implements PropertyInterface {
 	
 	///// Entity Fields /////
@@ -36,7 +40,7 @@ public class Community implements PropertyInterface {
 	private List<Integer> members;
 
 	@Embedded
-	private Properties properties;
+	private NetworkProperties networkProperties;
 	
 	public Community() {
 		
@@ -66,27 +70,37 @@ public class Community implements PropertyInterface {
 	
 	@Override
 	@JsonProperty
-	public Properties getProperties() {
-		return properties;
+	public NetworkProperties getProperties() {
+		return networkProperties;
+	}
+	
+	@JsonIgnore
+	public double getProperty(PropertyType property) {
+		return getProperties().getProperty(property);
+		
 	}
 	
 	///// Setter /////
 	
+	@JsonSetter
 	public void setCommunityId(int communityId) {
 		this.communityId = communityId;
 	}
-
+	
+	@JsonSetter
 	public void setCover(Cover cover) {
 		this.cover = cover;
 	}
-
+	
+	@JsonSetter
 	public void setMembers(List<Integer> members) {
 		this.members = members;
 	}
 
 	@Override
-	public void setProperties(Properties properties) {
-		this.properties = properties;
+	@JsonSetter
+	public void setProperties(NetworkProperties networkProperties) {
+		this.networkProperties = networkProperties;
 	}
 	
 

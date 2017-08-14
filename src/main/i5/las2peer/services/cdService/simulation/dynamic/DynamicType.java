@@ -6,7 +6,11 @@ package i5.las2peer.services.cdService.simulation.dynamic;
  */
 public enum DynamicType {
 
-	UNKNOWN(0, "Unknown", "UK"), REPLICATOR(1, "Replicator", "REP"), UNCONDITIONAL_IMITATION(2, "Imitation", "IM"), MORAN(3, "Moran", "MOR"), WS_LS(4, "Win-Stay Lose-Shift", "WSLS");
+	UNKNOWN(0, "Unknown", "UK"),
+	REPLICATOR(1, "Replicator", "REP"),
+	UNCONDITIONAL_IMITATION(2, "Imitation", "IM"),
+	MORAN(3, "Moran", "MOR"),
+	WS_LS(4, "Win-Stay Lose-Shift", "WSLS");
 
 	public final String string;
 	public final String shortcut;

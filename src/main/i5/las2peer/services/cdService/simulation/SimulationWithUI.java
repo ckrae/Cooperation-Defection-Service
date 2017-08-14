@@ -4,16 +4,24 @@ import java.awt.Color;
 
 import javax.swing.JFrame;
 
+import i5.las2peer.services.cdService.simulation.dynamic.Dynamic;
+import i5.las2peer.services.cdService.simulation.game.Game;
 import sim.display.Console;
 import sim.display.Controller;
 import sim.display.Display2D;
 import sim.display.GUIState;
 import sim.engine.SimState;
 import sim.portrayal.Inspector;
+import sim.portrayal.SimpleInspector;
+import sim.portrayal.inspector.TabbedInspector;
 import sim.portrayal.network.NetworkPortrayal2D;
 import sim.portrayal.network.SimpleEdgePortrayal2D;
 
+/**
+ * Provides a UI for the {@link Simulation} class. Used only in UI mode.
+ */
 public class SimulationWithUI extends GUIState {
+
 	public Display2D display;
 	public JFrame displayFrame;
 
@@ -34,15 +42,27 @@ public class SimulationWithUI extends GUIState {
 	}
 
 	@Override
-	public Object getSimulationInspectedObject() {
-		return state;
-	}
-
-	@Override
 	public Inspector getInspector() {
-		Inspector i = super.getInspector();
-		i.setVolatile(true);
-		return i;
+		
+		Simulation simulation = (Simulation) state;
+		Game game = simulation.getGame();
+		Dynamic dynamic = simulation.getDynamic();
+		BreakCondition condition = simulation.getBreakCondition();
+		System.out.println(condition);
+		
+		Inspector simInspector = new SimpleInspector(simulation, this);
+		Inspector gameInspector = new SimpleInspector(game, this);
+		Inspector dynamicInspector = new SimpleInspector(dynamic, this);
+		Inspector breakInspector = new SimpleInspector(condition, this);
+		
+		TabbedInspector inspector =  new sim.portrayal.inspector.TabbedInspector();
+		
+		inspector.addInspector(simInspector, "Simulation");
+		inspector.addInspector(gameInspector, "Game");	
+		inspector.addInspector(dynamicInspector, "Dynamic");	
+		inspector.addInspector(breakInspector, "Break");
+		
+		return inspector;
 	}
 
 	public static String getName() {
@@ -64,8 +84,6 @@ public class SimulationWithUI extends GUIState {
 	public void setupPortrayals() {
 		Simulation simulation = (Simulation) state;
 
-		// networkPortrayal.setField( new SpatialNetwork2D(
-		// simulation.network ) );
 		networkPortrayal.setPortrayalForAll(new SimpleEdgePortrayal2D());
 
 		// reschedule the displayer

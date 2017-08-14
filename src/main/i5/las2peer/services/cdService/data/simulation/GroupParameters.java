@@ -12,8 +12,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-import i5.las2peer.services.cdService.data.util.TableInterface;
-import i5.las2peer.services.cdService.data.util.TableRow;
+import i5.las2peer.services.cdService.data.util.table.Table;
+import i5.las2peer.services.cdService.data.util.table.TableInterface;
+import i5.las2peer.services.cdService.data.util.table.TableRow;
 import i5.las2peer.services.cdService.simulation.dynamic.DynamicType;
 
 @Entity
@@ -138,6 +139,16 @@ public class GroupParameters implements TableInterface {
 		line.add("");
 		return line;
 
+	}
+
+	@Override
+	public Table toTable() {
+		return null;
+	}
+
+	@Override
+	public String getName() {
+		return null;
 	}
 
 }

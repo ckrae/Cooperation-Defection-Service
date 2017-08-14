@@ -1,7 +1,5 @@
 package i5.las2peer.services.cdService.data.mapping;
 
-import java.util.List;
-
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.FetchType;
@@ -9,14 +7,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import i5.las2peer.services.cdService.data.network.NetworkMeta;
 import i5.las2peer.services.cdService.data.network.PropertyType;
 import i5.las2peer.services.cdService.data.simulation.SimulationSeriesGroup;
-import i5.las2peer.services.cdService.data.util.Table;
-import i5.las2peer.services.cdService.data.util.TableRow;
+import i5.las2peer.services.cdService.data.util.table.Table;
+import i5.las2peer.services.cdService.data.util.table.TableRow;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NetworkSimulationGroupMapping extends MappingAbstract {
 	
 ///// Entity Fields /////
@@ -32,7 +32,7 @@ public class NetworkSimulationGroupMapping extends MappingAbstract {
 	private SimulationSeriesGroup simulation;
 
 	@ElementCollection
-	List<Double> cooperationValues;
+	double[] cooperationValues;
 
 	@Embedded
 	Correlation correlation;
@@ -45,6 +45,7 @@ public class NetworkSimulationGroupMapping extends MappingAbstract {
 
 	///// Getter /////
 	
+	@Override
 	public long getId() {
 		return this.id;
 	}
@@ -59,17 +60,11 @@ public class NetworkSimulationGroupMapping extends MappingAbstract {
 		return simulation;
 	}
 
+	@Override
 	@JsonIgnore
-	public List<Double> getCooperationValues() {
+	public double[] getCooperationValues() {
 		return cooperationValues;
 	}
-
-	@JsonProperty
-	public Correlation getCorrelation() {
-		if(correlation == null)
-			correlation = new Correlation();
-		return correlation;
-	}	
 
 	///// Setter /////
 
@@ -81,12 +76,14 @@ public class NetworkSimulationGroupMapping extends MappingAbstract {
 		this.simulation = simulation;
 	}
 
-	public void setCooperationValues(List<Double> cooperationValues) {
+	@Override
+	public void setCooperationValues(double[] cooperationValues) {
 		this.cooperationValues = cooperationValues;
 	}
 
 	///// Methods /////
 	
+	@Override
 	@JsonIgnore
 	public double[] getPropertyValues(PropertyType property) {
 		
@@ -106,6 +103,12 @@ public class NetworkSimulationGroupMapping extends MappingAbstract {
 
 	@Override
 	public Table toTable() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getName() {
 		// TODO Auto-generated method stub
 		return null;
 	}

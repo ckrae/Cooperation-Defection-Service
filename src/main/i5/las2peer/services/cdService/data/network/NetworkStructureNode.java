@@ -5,7 +5,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NetworkStructureNode {
 	
 	@Id
@@ -13,18 +18,24 @@ public class NetworkStructureNode {
 	private int primaryId;
 	
 	@Basic
-	private int innerId;
+	private int nodeId;
 	
 	public NetworkStructureNode() {
 
 	}
 	
 	public NetworkStructureNode(int id) {
-		this.innerId = id;
+		this.nodeId = id;
 	}
 	
+	@JsonGetter
 	public int getId() {
-		return innerId;
+		return nodeId;
+	}
+	
+	@JsonSetter
+	public void setId(int nodeId) {
+		this.nodeId = nodeId;
 	}
 
 }

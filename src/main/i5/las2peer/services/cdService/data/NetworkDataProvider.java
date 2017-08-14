@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import i5.las2peer.api.Context;
 import i5.las2peer.api.exceptions.RemoteServiceException;
 import i5.las2peer.api.exceptions.ServiceInvocationException;
 import i5.las2peer.api.exceptions.ServiceNotAvailableException;
 import i5.las2peer.api.exceptions.ServiceNotFoundException;
 import i5.las2peer.api.exceptions.StorageException;
-import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.cdService.data.network.NetworkMeta;
 import i5.las2peer.services.cdService.data.network.GraphAdapter;
 
@@ -27,8 +25,10 @@ public class NetworkDataProvider {
 	public static NetworkDataProvider getInstance() {
 		return new NetworkDataProvider();
 	}
+	
+	////// Internal Networks //////
 
-	public NetworkMeta getNetwork(long networkId) throws ServiceInvocationException {
+	public NetworkMeta getNetwork(long networkId) {
 
 		NetworkMeta network = null;
 		try {
@@ -45,8 +45,6 @@ public class NetworkDataProvider {
 		long networkId = -1;
 		try {
 			if (network != null) {
-				long id = ((UserAgent) Context.getCurrent().getMainAgent()).getId();
-				network.setUserId(id);
 				networkId = entityHandler.storeNetwork(network);
 			}
 		} catch (Exception e) {
@@ -79,7 +77,7 @@ public class NetworkDataProvider {
 
 		NetworkMeta network = null;
 		try {
-			network = graphAdapter.inovkeGraphMeta(ocdId);
+			network = graphAdapter.inovkeGraph(ocdId);
 		} catch (ServiceNotFoundException | ServiceNotAvailableException | RemoteServiceException e) {
 			e.printStackTrace();
 		}

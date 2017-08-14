@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import i5.las2peer.services.cdService.data.network.NetworkStructure;
 import i5.las2peer.services.cdService.data.network.NetworkStructureBuilder;
-import sim.field.network.Network;
 
 public class NetworkParser {
 	
@@ -15,13 +14,19 @@ public class NetworkParser {
 		
 	}
 	
+	String network;
+	
+	public NetworkParser(String network) {
+		this.network = network;
+	}
+
 	public NetworkStructure readNetwork() {
 		
-		NetworkStructureBuilder<String> networkBuilder = new NetworkStructureBuilder<>();
+		NetworkStructureBuilder networkBuilder = new NetworkStructureBuilder();
 		
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new FileReader("BioJava"));
+			reader = new BufferedReader(new FileReader(network));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

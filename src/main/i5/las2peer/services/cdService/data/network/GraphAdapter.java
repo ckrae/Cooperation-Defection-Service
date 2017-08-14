@@ -2,19 +2,12 @@ package i5.las2peer.services.cdService.data.network;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import i5.las2peer.api.Context;
 import i5.las2peer.api.exceptions.RemoteServiceException;
 import i5.las2peer.api.exceptions.ServiceNotAvailableException;
 import i5.las2peer.api.exceptions.ServiceNotFoundException;
-import i5.las2peer.services.cdService.data.network.cover.Community;
-import i5.las2peer.services.cdService.data.network.cover.Cover;
-import sim.field.network.Edge;
-import sim.field.network.Network;
-import sim.util.Bag;
 
 /**
  *
@@ -29,8 +22,6 @@ public class GraphAdapter {
 
 	}
 
-	////////////// Networks //////////////////
-
 	@SuppressWarnings("unchecked")
 	public ArrayList<Long> invokeGraphIds()
 			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
@@ -41,17 +32,25 @@ public class GraphAdapter {
 	}
 
 	@SuppressWarnings("unchecked")
-	public NetworkMeta inovkeGraphMeta(long graphId)
+	public NetworkMeta inovkeGraph(long ocdGraphId)
 			throws ServiceNotFoundException, ServiceNotAvailableException, RemoteServiceException {
 
-		HashMap<String, Object> map = (HashMap<String, Object>) Context.getCurrent().invoke(graphService,
-				"getGraphById", graphId);
+		HashMap<String, Object> graphDataMap = (HashMap<String, Object>) Context.getCurrent().invoke(graphService,
+				"getGraphById", ocdGraphId);
 
-		NetworkMeta network = new NetworkMeta(graphId);
-		network.setGraphName((String) map.get("name"));
+		int nodes = (int) graphDataMap.get("nodes");
+		int edges = (int) graphDataMap.get("edges");
+		boolean directed = (boolean) graphDataMap.get("directed");
+		boolean weighted = (boolean) graphDataMap.get("weighted");
+		String name = (String) graphDataMap.get("name");
+		List<List<Integer>> adjList = (List<List<Integer>>) graphDataMap.get("graph");
+
+		NetworkMeta network = new NetworkMeta();
 		network.setOrigin(NetworkOrigin.OCD_Service);
-		network.setOriginId(graphId);
-		network.setSize((int) map.get("nodes"));
+		network.setGraphName(name);
+		network.setOriginId(ocdGraphId);
+		network.setSize(nodes);
+		network.setNetworkStructure(buildNetworkStructure(adjList));
 
 		return network;
 	}
@@ -67,21 +66,9 @@ public class GraphAdapter {
 		return buildNetworkStructure(graph);
 	}
 
-	public NetworkStructure buildNetworkStructure(List<List<Integer>> graph) {
+	protected NetworkStructure buildNetworkStructure(List<List<Integer>> adjList) {
 
-		int size = graph.size();
-		NetworkStructureBuilder<Integer> networkBuilder = new NetworkStructureBuilder<Integer>();
-
-		for (int node = 0; node < size; node++) {
-			List<Integer> nodeLinks = graph.get(node);
-
-			for (int nodeLink = 0, jSize = nodeLinks.size(); nodeLink < jSize; nodeLink++) {
-				Integer linkedNode = nodeLinks.get(nodeLink);
-				networkBuilder.addEdge(node, linkedNode);
-			}
-		}
-
-		return networkBuilder.build();
-	}	
+		return NetworkStructureBuilder.parseAdjList(adjList);
+	}
 
 }
